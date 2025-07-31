@@ -9,24 +9,25 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up()
-{
-    Schema::create('menus', function (Blueprint $table) {
-        $table->id();
-        $table->string('nama_menu');
-        $table->text('deskripsi')->nullable();
-        $table->decimal('harga', 10, 2);
-        $table->string('kategori');
-        $table->string('gambar')->nullable();
-        $table->timestamps();
-    });
-}
+    public function up(): void
+    {
+        Schema::create('tb_menu', function (Blueprint $table) {
+            $table->id(); // Ini akan menjadi kode makanan sekaligus primary key
+            $table->string('nama');
+            $table->text('deskripsi')->nullable(); // Kolom deskripsi baru
+            $table->decimal('harga_seporsi', 10, 2);
+            $table->enum('cita_rasa', ['asin', 'manis', 'pedas', 'asam', 'gurih', 'pahit']);
+            $table->tinyInteger('rating')->unsigned()->between(1, 5); // Rating 1-5 bintang
+            $table->string('gambar')->nullable(); // Untuk menyimpan path/nama file gambar
+            $table->timestamps();
+        });
+    }
 
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::dropIfExists('menus');
+        Schema::dropIfExists('tb_menu');
     }
 };

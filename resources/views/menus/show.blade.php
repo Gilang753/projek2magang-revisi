@@ -1,32 +1,59 @@
 @extends('layouts.app')
 
+@section('title', 'Detail Menu')
+
 @section('content')
-<div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                @if($menu->gambar)
-                    <img src="{{ asset('images/menus/'.$menu->gambar) }}" class="card-img-top" alt="{{ $menu->nama_menu }}">
-                @else
-                    <img src="{{ asset('images/no-image.jpg') }}" class="card-img-top" alt="No Image">
-                @endif
-                <div class="card-body">
-                    <h1 class="card-title">{{ $menu->nama_menu }}</h1>
-                    <p class="card-text">{{ $menu->deskripsi }}</p>
-                    <p class="h4">Rp {{ number_format($menu->harga, 0, ',', '.') }}</p>
-                    <span class="badge bg-primary">{{ $menu->kategori }}</span>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Detail Menu</h1>
+        <div>
+            <a href="{{ route('menus.index') }}" class="btn btn-secondary">
+                <i class="bi bi-arrow-left"></i> Kembali
+            </a>
+            <a href="{{ route('menus.edit', $menu->id) }}" class="btn btn-warning">
+                <i class="bi bi-pencil"></i> Edit
+            </a>
+            <form action="{{ route('menus.destroy', $menu->id) }}" method="POST" class="d-inline">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="btn btn-danger" onclick="return confirm('Apakah Anda yakin ingin menghapus menu ini?')">
+                    <i class="bi bi-trash"></i> Hapus
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-5">
+                    @if($menu->gambar)
+                        <img src="{{ asset('storage/'.$menu->gambar) }}" class="img-fluid rounded mb-3" style="max-height: 300px; object-fit: cover;" alt="{{ $menu->nama }}">
+                    @else
+                        <img src="{{ asset('images/tidak-ada-gambar.jpg') }}" class="img-fluid rounded mb-3" style="max-height: 300px; object-fit: cover;" alt="Tidak ada gambar">
+                    @endif
                 </div>
-                <div class="card-footer">
-                    <a href="{{ route('menus.edit', $menu->id) }}" class="btn btn-warning">Edit</a>
-                    <form action="{{ route('menus.destroy', $menu->id) }}" method="POST" style="display: inline;">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn btn-danger" onclick="return confirm('Apakah Anda yakin ingin menghapus menu ini?')">Hapus</button>
-                    </form>
-                    <a href="{{ route('menus.index') }}" class="btn btn-secondary float-end">Kembali</a>
+                <div class="col-md-7">
+                    <h3>{{ $menu->nama }}</h3>
+                    <p class="text-muted">{{ $menu->deskripsi }}</p>
+                    <table class="table table-bordered mt-3">
+                        <tr>
+                            <th width="30%">Harga per Porsi</th>
+                            <td>Rp {{ number_format($menu->harga_seporsi, 0, ',', '.') }}</td>
+                        </tr>
+                        <tr>
+                            <th>Cita Rasa</th>
+                            <td>{{ ucfirst($menu->cita_rasa) }}</td>
+                        </tr>
+                        <tr>
+                            <th>Rating</th>
+                            <td class="text-warning">
+                                {{ str_repeat('★', $menu->rating) }}{{ str_repeat('☆', 5 - $menu->rating) }}
+                                ({{ $menu->rating }} bintang)
+                            </td>
+                        </tr>
+                    </table>
                 </div>
             </div>
         </div>
     </div>
-</div>
 @endsection
