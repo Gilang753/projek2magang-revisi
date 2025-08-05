@@ -4,6 +4,9 @@
 
 @section('content')
 <div class="container" style="max-width: 500px; background-color: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+    @if(session('success'))
+        <div class="alert alert-success">{{ session('success') }}</div>
+    @endif
     <h2 class="text-center mb-4">Hitung Derajat Keanggotaan Fuzzy</h2>
     <form action="{{ route('fuzzy.calculate') }}" method="POST">
         @csrf
