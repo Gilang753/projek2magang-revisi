@@ -1,4 +1,3 @@
-Route::get('/fuzzy/data', [App\Http\Controllers\FuzzyController::class, 'showData'])->name('fuzzy.data');
 <?php
 
 use Illuminate\Support\Facades\Route;
