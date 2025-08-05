@@ -17,21 +17,21 @@
         <ul class="list-unstyled">
             <li class="result-item mb-3" style="font-size: 1.1rem; margin-bottom: 10px;">
                 <strong style="display: inline-block; min-width: 100px;">Murah:</strong> 
-                <span>{{ number_format($miu['murah'] * 100, 2) }}%</span>
+                <span>{{ number_format($miu['murah'], 3) }}</span>
                 <div class="membership-bar" style="height: 20px; background-color: #e9ecef; border-radius: 4px; margin-top: 5px; overflow: hidden;">
                     <div class="membership-fill-murah" style="height: 100%; background-color: #28a745; width: {{ $miu['murah'] * 100 }}%"></div>
                 </div>
             </li>
             <li class="result-item mb-3" style="font-size: 1.1rem; margin-bottom: 10px;">
                 <strong style="display: inline-block; min-width: 100px;">Sedang:</strong> 
-                <span>{{ number_format($miu['sedang'] * 100, 2) }}%</span>
+                <span>{{ number_format($miu['sedang'], 3) }}</span>
                 <div class="membership-bar" style="height: 20px; background-color: #e9ecef; border-radius: 4px; margin-top: 5px; overflow: hidden;">
                     <div class="membership-fill-sedang" style="height: 100%; background-color: #ffc107; width: {{ $miu['sedang'] * 100 }}%"></div>
                 </div>
             </li>
             <li class="result-item mb-3" style="font-size: 1.1rem; margin-bottom: 10px;">
                 <strong style="display: inline-block; min-width: 100px;">Mahal:</strong> 
-                <span>{{ number_format($miu['mahal'] * 100, 2) }}%</span>
+                <span>{{ number_format($miu['mahal'], 3) }}</span>
                 <div class="membership-bar" style="height: 20px; background-color: #e9ecef; border-radius: 4px; margin-top: 5px; overflow: hidden;">
                     <div class="membership-fill-mahal" style="height: 100%; background-color: #dc3545; width: {{ $miu['mahal'] * 100 }}%"></div>
                 </div>
