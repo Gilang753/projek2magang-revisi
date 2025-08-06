@@ -38,10 +38,17 @@
 
         <hr>
 
+        <h5 class="text-center mb-3">Grafik Fungsi Keanggotaan Fuzzy</h5>
+        <div style="height: 300px;">
+            <canvas id="fuzzyChart"></canvas>
+        </div>
+
+        <hr>
+
         <div class="mb-4">
             <label for="harga" class="form-label" style="font-weight: bold;">Masukkan Harga yang Dihitung:</label>
             <input type="number" class="form-control @error('harga') is-invalid @enderror" 
-                   id="harga" name="harga" value="{{ old('harga') }}" required>
+                    id="harga" name="harga" value="{{ old('harga') }}" required>
             @error('harga')
                 <div class="invalid-feedback">
                     {{ $message }}
@@ -89,3 +96,128 @@
     @endif
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const p1Input = document.getElementById('p1');
+        const p2Input = document.getElementById('p2');
+        const p3Input = document.getElementById('p3');
+        const p4Input = document.getElementById('p4');
+        const hargaInput = document.getElementById('harga');
+        const ctx = document.getElementById('fuzzyChart').getContext('2d');
+        let fuzzyChart;
+
+        const createFuzzyChart = (p1, p2, p3, p4, harga) => {
+            const sortedPoints = [parseFloat(p1), parseFloat(p2), parseFloat(p3), parseFloat(p4)].sort((a, b) => a - b);
+            const a = sortedPoints[0];
+            const b = sortedPoints[1];
+            const c = sortedPoints[2];
+            const d = sortedPoints[3];
+            const hargaValue = parseFloat(harga);
+
+            if (fuzzyChart) {
+                fuzzyChart.destroy();
+            }
+
+            const datasets = [
+                {
+                    label: 'Murah',
+                    // Menambahkan titik data agar grafik dimulai dari y=1 di x=0
+                    data: [{ x: 0, y: 1 }, { x: a, y: 1 }, { x: b, y: 0 }],
+                    borderColor: '#28a745',
+                    borderWidth: 2,
+                    fill: false,
+                    tension: 0,
+                    pointRadius: 5,
+                },
+                {
+                    label: 'Sedang',
+                    data: [{ x: a, y: 0 }, { x: b, y: 1 }, { x: c, y: 1 }, { x: d, y: 0 }],
+                    borderColor: '#ffc107',
+                    borderWidth: 2,
+                    fill: false,
+                    tension: 0,
+                    pointRadius: 5,
+                },
+                {
+                    label: 'Mahal',
+                    // Menambahkan titik data agar grafik berakhir di y=1 setelah x=d
+                    data: [{ x: c, y: 0 }, { x: d, y: 1 }, { x: d + 5000, y: 1 }],
+                    borderColor: '#dc3545',
+                    borderWidth: 2,
+                    fill: false,
+                    tension: 0,
+                    pointRadius: 5,
+                },
+            ];
+
+            // Tambahkan garis input harga jika nilai harga valid
+            if (!isNaN(hargaValue)) {
+                datasets.push({
+                    label: 'Harga Input',
+                    data: [{ x: hargaValue, y: 0 }, { x: hargaValue, y: 1.0 }],
+                    borderColor: '#0d6efd',
+                    borderWidth: 2,
+                    borderDash: [5, 5],
+                    pointRadius: 0,
+                });
+            }
+            
+            fuzzyChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    datasets: datasets,
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            position: 'bottom',
+                            title: { display: true, text: 'Harga' },
+                            min: 0,
+                            // Menyesuaikan nilai maksimum agar garis lurus akhir terlihat
+                            max: d + 5000,
+                        },
+                        y: {
+                            min: 0,
+                            max: 1.1,
+                            title: { display: true, text: 'Miu' }
+                        }
+                    },
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false
+                        }
+                    }
+                }
+            });
+        };
+
+        const updateChart = () => {
+            createFuzzyChart(
+                p1Input.value,
+                p2Input.value,
+                p3Input.value,
+                p4Input.value,
+                hargaInput.value
+            );
+        };
+
+        // Inisialisasi grafik saat halaman dimuat
+        updateChart();
+
+        // Perbarui grafik setiap kali input berubah
+        [p1Input, p2Input, p3Input, p4Input, hargaInput].forEach(input => {
+            input.addEventListener('input', updateChart);
+        });
+    });
+</script>
+@endpush
