@@ -183,7 +183,7 @@
                         },
                         y: {
                             min: 0,
-                            max: 1.1,
+                            max: 1.0,
                             title: { display: true, text: 'Miu' }
                         }
                     },
