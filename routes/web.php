@@ -1,4 +1,8 @@
+
 <?php
+use App\Http\Controllers\FuzzyBoundaryController;
+// Route untuk menyimpan boundaries
+Route::post('/fuzzy/boundaries', [FuzzyBoundaryController::class, 'store'])->name('fuzzy.boundaries.store');
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MenuController;

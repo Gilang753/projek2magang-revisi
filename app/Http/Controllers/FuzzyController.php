@@ -11,34 +11,29 @@ class FuzzyController extends Controller
     public function showInputForm()
     {
         $data = FuzzyInput::orderBy('created_at', 'desc')->get();
-        return view('fuzzy.input', compact('data'));
+        $boundaries = \App\Models\FuzzyBoundary::first();
+        return view('fuzzy.input', compact('data', 'boundaries'));
     }
 
     // ⭐ Fungsi ini diubah agar langsung mengarahkan ke halaman hasil
     public function calculateMiu(Request $request)
     {
+
         $request->validate([
-            'p1' => 'required|numeric',
-            'p2' => 'required|numeric',
-            'p3' => 'required|numeric',
-            'p4' => 'required|numeric',
             'harga' => 'required|numeric|min:0',
         ]);
 
         $harga = (float) $request->input('harga');
 
-        $fuzzyPoints = [
-            (float) $request->input('p1'),
-            (float) $request->input('p2'),
-            (float) $request->input('p3'),
-            (float) $request->input('p4'),
-        ];
-        sort($fuzzyPoints);
-        
-        $a = $fuzzyPoints[0];
-        $b = $fuzzyPoints[1];
-        $c = $fuzzyPoints[2];
-        $d = $fuzzyPoints[3];
+        // Ambil boundaries dari database
+        $boundaries = \App\Models\FuzzyBoundary::first();
+        if (!$boundaries) {
+            return redirect()->route('fuzzy.input')->with('error', 'Batas fuzzy belum diatur.');
+        }
+        $a = (float) $boundaries->batas1;
+        $b = (float) $boundaries->batas2;
+        $c = (float) $boundaries->batas3;
+        $d = (float) $boundaries->batas4;
 
         $miu = [
             'murah' => $this->getMiuMurah($harga, $a, $b),
@@ -58,8 +53,8 @@ class FuzzyController extends Controller
             'miu_mahal' => $miu['mahal'],
         ]);
 
-        // Langsung tampilkan view hasil perhitungan
-        return view('fuzzy.result', compact('harga', 'miu'));
+    // Redirect ke halaman histori agar hasil langsung terlihat di tabel
+    return redirect()->route('fuzzy.input')->with('success', 'Data berhasil dihitung dan disimpan!');
     }
 
     // Fungsi-fungsi keanggotaan tetap sama

@@ -24,9 +24,29 @@
 
         <hr>
 
-        <h5 class="text-center mb-3">Grafik Fungsi Keanggotaan Rating</h5>
-        <div style="height: 300px;">
-            <canvas id="fuzzyChart"></canvas>
+        <h5 class="text-center mb-3">Grafik Fungsi Keanggotaan Fuzzy Rating</h5>
+        <div class="mb-4 d-flex flex-column align-items-center gap-4">
+            <div style="width: 100%; max-width: 900px; margin-bottom: 32px;">
+                <div style="height: 350px; position: relative;">
+                    <canvas id="fuzzyChartRendah"></canvas>
+                    <div class="x-labels" id="x-labels-rendah"></div>
+                </div>
+                <div class="text-center mt-2">Rendah</div>
+            </div>
+            <div style="width: 100%; max-width: 900px; margin-bottom: 32px;">
+                <div style="height: 350px; position: relative;">
+                    <canvas id="fuzzyChartSedang"></canvas>
+                    <div class="x-labels" id="x-labels-sedang"></div>
+                </div>
+                <div class="text-center mt-2">Sedang</div>
+            </div>
+            <div style="width: 100%; max-width: 900px;">
+                <div style="height: 350px; position: relative;">
+                    <canvas id="fuzzyChartTinggi"></canvas>
+                    <div class="x-labels" id="x-labels-tinggi"></div>
+                </div>
+                <div class="text-center mt-2">Tinggi</div>
+            </div>
         </div>
 
         <hr>
@@ -122,49 +142,37 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const ctx = document.getElementById('fuzzyChart').getContext('2d');
-    let fuzzyChart;
+    // Boundaries rating (bisa diubah sesuai kebutuhan)
+    const b1 = 20, b2 = 40, b3 = 60, b4 = 80, b5 = 100;
+    const ctxRendah = document.getElementById('fuzzyChartRendah').getContext('2d');
+    const ctxSedang = document.getElementById('fuzzyChartSedang').getContext('2d');
+    const ctxTinggi = document.getElementById('fuzzyChartTinggi').getContext('2d');
 
-    // Parameter fuzzy rating
-    const rendahMin = 20;
-    const rendahMax = 60;
-    const sedangMin = 20;
-    const sedangMax = 100;
-    const tinggiMin = 60;
-    const tinggiMax = 100;
+    function getRatingValue() {
+        const val = $("#rating_bintang").val();
+        if (!val) return NaN;
+        return parseInt(val) * 20;
+    }
 
-    // Inisialisasi chart
-    function initChart() {
-        fuzzyChart = new Chart(ctx, {
+    function createChart(ctx, dataset, ratingValue, minX, maxX, warna, a, b, c, d, labelContainerId) {
+        if (ctx.chart) ctx.chart.destroy();
+        const datasets = [dataset];
+        if (!isNaN(ratingValue)) {
+            datasets.push({
+                label: 'Input Rating',
+                data: [{ x: ratingValue, y: 0 }, { x: ratingValue, y: 1.0 }],
+                borderColor: '#0d6efd',
+                borderWidth: 2,
+                borderDash: [5, 5],
+                pointRadius: 0,
+            });
+        }
+        let tickValues = [a, b, c, d];
+        if (!isNaN(ratingValue) && !tickValues.includes(ratingValue)) tickValues.push(ratingValue);
+        tickValues = tickValues.filter(v => !isNaN(v)).sort((x, y) => x - y);
+        ctx.chart = new Chart(ctx, {
             type: 'line',
-            data: {
-                datasets: [
-                    {
-                        label: 'Rendah',
-                        data: [{x: 0, y: 1}, {x: rendahMin, y: 1}, {x: rendahMax, y: 0}],
-                        borderColor: '#dc3545',
-                        borderWidth: 2,
-                        fill: false,
-                        tension: 0
-                    },
-                    {
-                        label: 'Sedang',
-                        data: [{x: sedangMin, y: 0}, {x: (sedangMin+sedangMax)/2, y: 1}, {x: sedangMax, y: 0}],
-                        borderColor: '#ffc107',
-                        borderWidth: 2,
-                        fill: false,
-                        tension: 0
-                    },
-                    {
-                        label: 'Tinggi',
-                        data: [{x: tinggiMin, y: 0}, {x: tinggiMax, y: 1}, {x: tinggiMax, y: 1}],
-                        borderColor: '#28a745',
-                        borderWidth: 2,
-                        fill: false,
-                        tension: 0
-                    }
-                ]
-            },
+            data: { datasets: datasets },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
@@ -173,17 +181,101 @@ document.addEventListener('DOMContentLoaded', function() {
                         type: 'linear',
                         position: 'bottom',
                         title: { display: true, text: 'Nilai Rating' },
-                        min: 0,
-                        max: 100
+                        min: Math.min(...tickValues),
+                        max: Math.max(...tickValues),
+                        ticks: {
+                            autoSkip: false,
+                            minRotation: 0,
+                            maxRotation: 0,
+                            stepSize: null,
+                            callback: function(value) {
+                                if (value === a) return 'B1: ' + a;
+                                if (value === b) return 'B2: ' + b;
+                                if (value === c) return 'B3: ' + c;
+                                if (value === d) return 'B4: ' + d;
+                                if (!isNaN(ratingValue) && value === ratingValue) return 'Rating: ' + ratingValue;
+                                return '';
+                            },
+                            values: tickValues
+                        }
                     },
                     y: {
                         min: 0,
                         max: 1.0,
-                        title: { display: true, text: 'Derajat Keanggotaan' }
+                        title: { display: true, text: 'Miu' }
                     }
+                },
+                plugins: {
+                    legend: { display: false },
+                    tooltip: { mode: 'index', intersect: false }
                 }
             }
         });
+        // Render label di bawah grafik
+        if (labelContainerId) {
+            const labelContainer = document.getElementById(labelContainerId);
+            if (labelContainer) {
+                labelContainer.innerHTML = '';
+                labelContainer.style.display = 'block';
+                labelContainer.style.position = 'absolute';
+                labelContainer.style.left = 0;
+                labelContainer.style.right = 0;
+                labelContainer.style.bottom = '-28px';
+                labelContainer.style.width = '100%';
+                labelContainer.style.pointerEvents = 'none';
+                tickValues.forEach(function(val) {
+                    let label = '';
+                    if (!isNaN(ratingValue) && val === ratingValue) label = ratingValue;
+                    else label = '';
+                    const div = document.createElement('div');
+                    div.style.position = 'absolute';
+                    div.style.transform = 'translateX(-50%)';
+                    div.style.left = ((val - Math.min(a, b, c, d, ratingValue)) / (Math.max(a, b, c, d, ratingValue) - Math.min(a, b, c, d, ratingValue)) * 100) + '%';
+                    div.style.textAlign = 'center';
+                    div.style.minWidth = '60px';
+                    div.style.fontWeight = 'bold';
+                    div.style.color = '#dc3545';
+                    div.innerText = label;
+                    labelContainer.appendChild(div);
+                });
+            }
+        }
+    }
+
+    function updateCharts() {
+        const a = b1, b = b2, c = b3, d = b4;
+        const ratingValue = getRatingValue();
+        // Dataset untuk masing-masing grafik
+        const datasetRendah = {
+            label: 'Rendah',
+            data: [{ x: 0, y: 1 }, { x: a, y: 1 }, { x: b, y: 0 }],
+            borderColor: '#28a745',
+            borderWidth: 2,
+            fill: false,
+            tension: 0,
+            pointRadius: 5,
+        };
+        const datasetSedang = {
+            label: 'Sedang',
+            data: [{ x: a, y: 0 }, { x: b, y: 1 }, { x: c, y: 1 }, { x: d, y: 0 }],
+            borderColor: '#ffc107',
+            borderWidth: 2,
+            fill: false,
+            tension: 0,
+            pointRadius: 5,
+        };
+        const datasetTinggi = {
+            label: 'Tinggi',
+            data: [{ x: c, y: 0 }, { x: d, y: 1 }, { x: d + 20, y: 1 }],
+            borderColor: '#dc3545',
+            borderWidth: 2,
+            fill: false,
+            tension: 0,
+            pointRadius: 5,
+        };
+        createChart(ctxRendah, datasetRendah, ratingValue, 0, d + 20, '#28a745', a, b, c, d, 'x-labels-rendah');
+        createChart(ctxSedang, datasetSedang, ratingValue, 0, d + 20, '#ffc107', a, b, c, d, 'x-labels-sedang');
+        createChart(ctxTinggi, datasetTinggi, ratingValue, 0, d + 20, '#dc3545', a, b, c, d, 'x-labels-tinggi');
     }
 
     // Star rating selection
@@ -191,14 +283,13 @@ document.addEventListener('DOMContentLoaded', function() {
         const rating = $(this).data('rating');
         highlightStars(rating);
     });
-    
     $('.rating-star').click(function() {
         const rating = $(this).data('rating');
         $('#rating_bintang').val(rating);
         highlightStars(rating);
+        updateCharts();
         calculateFuzzy(rating);
     });
-    
     function highlightStars(rating) {
         $('.rating-star').removeClass('fas').addClass('far');
         $('.rating-star').each(function() {
@@ -207,16 +298,9 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-    
-    // Calculate fuzzy function
+    // Calculate fuzzy function (AJAX tetap sama)
     function calculateFuzzy(rating) {
         if (rating >= 1 && rating <= 5) {
-            const nilaiRating = rating * 20;
-            
-            // Update garis input rating pada chart
-            updateChartWithRating(nilaiRating);
-            
-            // Hitung nilai keanggotaan
             $.ajax({
                 url: "{{ route('fuzzy.calculateRatingPreview') }}",
                 method: 'POST',
@@ -226,53 +310,25 @@ document.addEventListener('DOMContentLoaded', function() {
                 },
                 success: function(response) {
                     if (response.success) {
-                        // Update values
                         $('#lowValue').text(response.result.keanggotaan_rendah);
                         $('#mediumValue').text(response.result.keanggotaan_sedang);
                         $('#highValue').text(response.result.keanggotaan_tinggi);
-                        
-                        // Update progress bars
                         $('#lowBar').css('width', (response.result.keanggotaan_rendah * 100) + '%');
                         $('#mediumBar').css('width', (response.result.keanggotaan_sedang * 100) + '%');
                         $('#highBar').css('width', (response.result.keanggotaan_tinggi * 100) + '%');
-                        
-                        // Update dominant category
                         $('#categoryText').text(response.kategori);
                         const alertClass = response.kategori === 'Tinggi' ? 'alert-success' : 
                                           response.kategori === 'Sedang' ? 'alert-warning' : 'alert-danger';
                         $('#dominantCategory').removeClass('alert-success alert-warning alert-danger')
                                              .addClass(alertClass);
-                        
-                        // Show result
                         $('#calculationResult').fadeIn();
                     }
                 }
             });
         }
     }
-
-    // Update chart dengan garis rating
-    function updateChartWithRating(nilaiRating) {
-        // Hapus dataset input rating jika sudah ada
-        if (fuzzyChart.data.datasets.length > 3) {
-            fuzzyChart.data.datasets.pop();
-        }
-        
-        // Tambahkan garis input rating
-        fuzzyChart.data.datasets.push({
-            label: 'Input Rating',
-            data: [{x: nilaiRating, y: 0}, {x: nilaiRating, y: 1}],
-            borderColor: '#0d6efd',
-            borderWidth: 2,
-            borderDash: [5, 5],
-            pointRadius: 0
-        });
-        
-        fuzzyChart.update();
-    }
-
-    // Inisialisasi chart pertama kali
-    initChart();
+    // Inisialisasi grafik saat halaman dimuat
+    updateCharts();
 });
 </script>
 @endpush
