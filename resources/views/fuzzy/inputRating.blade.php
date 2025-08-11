@@ -3,7 +3,7 @@
 @section('title', 'Setting Fuzzy Rating')
 
 @section('content')
-<div class="container" style="max-width: 800px; background-color: #ffffff; padding: 30px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
+<div class="container" style="max-width: 1000px; background: linear-gradient(135deg, #f8fafc 0%, #e2eafc 100%); padding: 40px 32px 32px 32px; border-radius: 16px; box-shadow: 0 6px 24px rgba(0,0,0,0.13); margin-top: 32px;">
     @if(session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
     @endif
@@ -24,28 +24,37 @@
 
         <hr>
 
-        <h5 class="text-center mb-3">Grafik Fungsi Keanggotaan Fuzzy Rating</h5>
-        <div class="mb-4 d-flex flex-column align-items-center gap-4">
-            <div style="width: 100%; max-width: 900px; margin-bottom: 32px;">
+        <h5 class="text-center mb-4" style="font-weight:700; letter-spacing:1px; color:#2d3a4a;">Grafik Fungsi Keanggotaan Fuzzy Rating</h5>
+        <div class="mb-5">
+            <div style="width: 100%; max-width: 900px; margin: 0 auto 32px auto; background: #fff; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.07); padding: 24px 16px 32px 16px;">
                 <div style="height: 350px; position: relative;">
-                    <canvas id="fuzzyChartRendah"></canvas>
-                    <div class="x-labels" id="x-labels-rendah"></div>
+                    <canvas id="fuzzyChartGabungan"></canvas>
+                    <div class="x-labels" id="x-labels-gabungan"></div>
                 </div>
-                <div class="text-center mt-2">Rendah</div>
+                <div class="text-center mt-2 fw-bold" style="color:#3b3b3b;">Gabungan</div>
             </div>
-            <div style="width: 100%; max-width: 900px; margin-bottom: 32px;">
-                <div style="height: 350px; position: relative;">
-                    <canvas id="fuzzyChartSedang"></canvas>
-                    <div class="x-labels" id="x-labels-sedang"></div>
+            <div class="d-flex flex-wrap justify-content-between gap-4">
+                <div style="flex:1 1 280px; min-width:280px; max-width: 32%; background: #fff; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.07); padding: 24px 12px 32px 12px;">
+                    <div style="height: 350px; position: relative;">
+                        <canvas id="fuzzyChartRendah"></canvas>
+                        <div class="x-labels" id="x-labels-rendah"></div>
+                    </div>
+                    <div class="text-center mt-2 fw-bold" style="color:#28a745;">Rendah</div>
                 </div>
-                <div class="text-center mt-2">Sedang</div>
-            </div>
-            <div style="width: 100%; max-width: 900px;">
-                <div style="height: 350px; position: relative;">
-                    <canvas id="fuzzyChartTinggi"></canvas>
-                    <div class="x-labels" id="x-labels-tinggi"></div>
+                <div style="flex:1 1 280px; min-width:280px; max-width: 32%; background: #fff; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.07); padding: 24px 12px 32px 12px;">
+                    <div style="height: 350px; position: relative;">
+                        <canvas id="fuzzyChartSedang"></canvas>
+                        <div class="x-labels" id="x-labels-sedang"></div>
+                    </div>
+                    <div class="text-center mt-2 fw-bold" style="color:#ffc107;">Sedang</div>
                 </div>
-                <div class="text-center mt-2">Tinggi</div>
+                <div style="flex:1 1 280px; min-width:280px; max-width: 32%; background: #fff; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.07); padding: 24px 12px 32px 12px;">
+                    <div style="height: 350px; position: relative;">
+                        <canvas id="fuzzyChartTinggi"></canvas>
+                        <div class="x-labels" id="x-labels-tinggi"></div>
+                    </div>
+                    <div class="text-center mt-2 fw-bold" style="color:#dc3545;">Tinggi</div>
+                </div>
             </div>
         </div>
 
@@ -144,9 +153,131 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Boundaries rating (bisa diubah sesuai kebutuhan)
     const b1 = 20, b2 = 40, b3 = 60, b4 = 80, b5 = 100;
+    const ctxGabungan = document.getElementById('fuzzyChartGabungan').getContext('2d');
     const ctxRendah = document.getElementById('fuzzyChartRendah').getContext('2d');
     const ctxSedang = document.getElementById('fuzzyChartSedang').getContext('2d');
     const ctxTinggi = document.getElementById('fuzzyChartTinggi').getContext('2d');
+    let chartGabungan;
+    function createCombinedChart(ratingValue) {
+        // Dataset gabungan
+        const a = b1, b = b2, c = b3, d = b4;
+        const datasets = [
+            {
+                label: 'Rendah',
+                data: [{ x: 0, y: 1 }, { x: a, y: 1 }, { x: b, y: 0 }],
+                borderColor: '#28a745',
+                borderWidth: 2,
+                fill: false,
+                tension: 0,
+                pointRadius: 5,
+            },
+            {
+                label: 'Sedang',
+                data: [{ x: a, y: 0 }, { x: b, y: 1 }, { x: c, y: 1 }, { x: d, y: 0 }],
+                borderColor: '#ffc107',
+                borderWidth: 2,
+                fill: false,
+                tension: 0,
+                pointRadius: 5,
+            },
+            {
+                label: 'Tinggi',
+                data: [{ x: c, y: 0 }, { x: d, y: 1 }, { x: d + 20, y: 1 }],
+                borderColor: '#dc3545',
+                borderWidth: 2,
+                fill: false,
+                tension: 0,
+                pointRadius: 5,
+            }
+        ];
+        if (!isNaN(ratingValue)) {
+            datasets.push({
+                label: 'Input Rating',
+                data: [{ x: ratingValue, y: 0 }, { x: ratingValue, y: 1.0 }],
+                borderColor: '#0d6efd',
+                borderWidth: 2,
+                borderDash: [5, 5],
+                pointRadius: 0,
+            });
+        }
+        let tickValues = [a, b, c, d];
+        if (!isNaN(ratingValue) && !tickValues.includes(ratingValue)) tickValues.push(ratingValue);
+        tickValues = tickValues.filter(v => !isNaN(v)).sort((x, y) => x - y);
+        if (chartGabungan) chartGabungan.destroy();
+        chartGabungan = new Chart(ctxGabungan, {
+            type: 'line',
+            data: { datasets: datasets },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        type: 'linear',
+                        position: 'bottom',
+                        title: { display: true, text: 'Nilai Rating' },
+                        min: Math.min(...tickValues),
+                        max: Math.max(...tickValues),
+                        ticks: {
+                            autoSkip: false,
+                            minRotation: 0,
+                            maxRotation: 0,
+                            stepSize: null,
+                            callback: function(value) {
+                                if (value === a) return 'B1: ' + a;
+                                if (value === b) return 'B2: ' + b;
+                                if (value === c) return 'B3: ' + c;
+                                if (value === d) return 'B4: ' + d;
+                                if (!isNaN(ratingValue) && value === ratingValue) return 'Rating: ' + ratingValue;
+                                return '';
+                            },
+                            values: tickValues
+                        }
+                    },
+                    y: {
+                        min: 0,
+                        max: 1.0,
+                        title: { display: true, text: 'Miu' }
+                    }
+                },
+                plugins: {
+                    legend: { display: true },
+                    tooltip: { mode: 'index', intersect: false }
+                }
+            }
+        });
+        // Render label di bawah grafik gabungan
+        const labelContainer = document.getElementById('x-labels-gabungan');
+        if (labelContainer) {
+            labelContainer.innerHTML = '';
+            labelContainer.style.display = 'block';
+            labelContainer.style.position = 'absolute';
+            labelContainer.style.left = 0;
+            labelContainer.style.right = 0;
+            labelContainer.style.bottom = '-28px';
+            labelContainer.style.width = '100%';
+            labelContainer.style.pointerEvents = 'none';
+            tickValues.forEach(function(val) {
+                let label = '';
+                if (!isNaN(ratingValue) && val === ratingValue) label = ratingValue;
+                else label = '';
+                const div = document.createElement('div');
+                div.style.position = 'absolute';
+                div.style.transform = 'translateX(-50%)';
+                // Skala X pada chart gabungan
+                const chartArea = chartGabungan.chartArea;
+                const xScale = chartGabungan.scales.x;
+                if (chartArea && xScale) {
+                    div.style.left = (xScale.getPixelForValue(val) - chartArea.left) + 'px';
+                }
+                div.style.textAlign = 'center';
+                div.style.minWidth = '60px';
+                div.style.fontWeight = 'bold';
+                div.style.color = '#dc3545';
+                div.innerText = label;
+                labelContainer.appendChild(div);
+            });
+        }
+    }
 
     function getRatingValue() {
         const val = $("#rating_bintang").val();
@@ -245,7 +376,9 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateCharts() {
         const a = b1, b = b2, c = b3, d = b4;
         const ratingValue = getRatingValue();
-        // Dataset untuk masing-masing grafik
+    // Update grafik gabungan
+    createCombinedChart(ratingValue);
+    // Dataset untuk masing-masing grafik
         const datasetRendah = {
             label: 'Rendah',
             data: [{ x: 0, y: 1 }, { x: a, y: 1 }, { x: b, y: 0 }],
