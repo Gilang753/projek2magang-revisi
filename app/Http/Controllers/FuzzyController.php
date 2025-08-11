@@ -4,87 +4,90 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\FuzzyInput;
+use App\Models\FuzzyBoundary;
 
 class FuzzyController extends Controller
 {
-    // Fungsi ini tetap menampilkan halaman input beserta historinya
     public function showInputForm()
     {
         $data = FuzzyInput::orderBy('created_at', 'desc')->get();
-        $boundaries = \App\Models\FuzzyBoundary::first();
-        return view('fuzzy.input', compact('data', 'boundaries'));
+        $boundaries = FuzzyBoundary::first();
+        $results = session('results');
+
+        return view('fuzzy.input', compact('data', 'boundaries', 'results'));
     }
 
-    // ⭐ Fungsi ini diubah agar langsung mengarahkan ke halaman hasil
     public function calculateMiu(Request $request)
     {
-
         $request->validate([
             'harga' => 'required|numeric|min:0',
         ]);
 
         $harga = (float) $request->input('harga');
 
-        // Ambil boundaries dari database
-        $boundaries = \App\Models\FuzzyBoundary::first();
+        $boundaries = FuzzyBoundary::first();
         if (!$boundaries) {
-            return redirect()->route('fuzzy.input')->with('error', 'Batas fuzzy belum diatur.');
+            return redirect()->route('fuzzy.input')->with('error', 'Batas fuzzy belum diatur. Silakan simpan batas terlebih dahulu.');
         }
-        $a = (float) $boundaries->batas1;
-        $b = (float) $boundaries->batas2;
-        $c = (float) $boundaries->batas3;
-        $d = (float) $boundaries->batas4;
 
+        $p1 = (float) $boundaries->batas1;
+        $p2 = (float) $boundaries->batas2;
+        $p3 = (float) $boundaries->batas3;
+        $p4 = (float) $boundaries->batas4;
+        $p5 = (float) $boundaries->batas5;
+
+        // Hitung miu dengan fungsi yang benar
         $miu = [
-            'murah' => $this->getMiuMurah($harga, $a, $b),
-            'sedang' => $this->getMiuSedang($harga, $a, $b, $c, $d),
-            'mahal' => $this->getMiuMahal($harga, $c, $d),
+            'murah' => $this->getMiuMurah($harga, $p1, $p2), // Murah pakai Bahu Kiri
+            'sedang' => $this->getMiuSegitiga($harga, $p2, $p3, $p4), // Sedang tetap Segitiga
+            'mahal' => $this->getMiuMahal($harga, $p4, $p5), // Mahal pakai Bahu Kanan
         ];
 
         // Simpan semua data ke database
         FuzzyInput::create([
             'harga' => $harga,
-            'p1' => $a,
-            'p2' => $b,
-            'p3' => $c,
-            'p4' => $d,
+            'p1' => $p1,
+            'p2' => $p2,
+            'p3' => $p3,
+            'p4' => $p4,
+            'p5' => $p5,
             'miu_murah' => $miu['murah'],
             'miu_sedang' => $miu['sedang'],
             'miu_mahal' => $miu['mahal'],
         ]);
 
-    // Redirect ke halaman histori agar hasil langsung terlihat di tabel
-    return redirect()->route('fuzzy.input')->with('success', 'Data berhasil dihitung dan disimpan!');
+        return redirect()->route('fuzzy.input')->with('success', 'Data berhasil dihitung dan disimpan!')->with('results', ['harga' => $harga, 'miu_murah' => $miu['murah'], 'miu_sedang' => $miu['sedang'], 'miu_mahal' => $miu['mahal']]);
     }
 
-    // Fungsi-fungsi keanggotaan tetap sama
-    private function getMiuMurah($x, $a, $b)
+    // Fungsi Keanggotaan Bahu Kiri
+    private function getMiuMurah($x, $p1, $p2)
     {
-        if ($x <= $a) { return 1.0; } 
-        elseif ($x > $a && $x <= $b) {
-            if (($b - $a) == 0) return 1.0;
-            return ($b - $x) / ($b - $a);
+        if ($x <= $p1) { return 1.0; }
+        elseif ($x > $p1 && $x < $p2) {
+            if (($p2 - $p1) == 0) return 1.0;
+            return ($p2 - $x) / ($p2 - $p1);
         } else { return 0.0; }
     }
 
-    private function getMiuSedang($x, $a, $b, $c, $d)
+    // Fungsi Keanggotaan Segitiga
+    private function getMiuSegitiga($x, $p2, $p3, $p4)
     {
-        if ($x >= $b && $x <= $c) { return 1.0; }
-        elseif ($x > $a && $x < $b) {
-            if (($b - $a) == 0) return 1.0;
-            return ($x - $a) / ($b - $a);
-        } elseif ($x > $c && $x < $d) {
-            if (($d - $c) == 0) return 1.0;
-            return ($d - $x) / ($d - $c);
+        if ($x > $p2 && $x <= $p3) {
+            if (($p3 - $p2) == 0) return 1.0;
+            return ($x - $p2) / ($p3 - $p2);
+        } elseif ($x > $p3 && $x < $p4) {
+            if (($p4 - $p3) == 0) return 1.0;
+            return ($p4 - $x) / ($p4 - $p3);
         } else { return 0.0; }
     }
 
-    private function getMiuMahal($x, $c, $d)
+    // Fungsi Keanggotaan Bahu Kanan
+    private function getMiuMahal($x, $p4, $p5)
     {
-        if ($x >= $d) { return 1.0; }
-        elseif ($x > $c && $x < $d) {
-            if (($d - $c) == 0) return 1.0;
-            return ($x - $c) / ($d - $c);
+        if ($x >= $p5) { return 1.0; }
+        elseif ($x > $p4 && $x < $p5) {
+            if (($p5 - $p4) == 0) return 1.0;
+            return ($x - $p4) / ($p5 - $p4);
         } else { return 0.0; }
     }
 }

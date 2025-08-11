@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\FuzzyInput;
 use App\Models\FuzzyBoundary;
 
 class FuzzyBoundaryController extends Controller
@@ -11,19 +10,28 @@ class FuzzyBoundaryController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'batas1' => 'required|numeric',
-            'batas2' => 'required|numeric',
-            'batas3' => 'required|numeric',
-            'batas4' => 'required|numeric',
+            'batas_murah_awal' => 'required|numeric',
+            'batas_murah_puncak' => 'required|numeric',
+            'batas_murah_akhir' => 'required|numeric',
+            'batas_sedang_awal' => 'required|numeric',
+            'batas_sedang_puncak' => 'required|numeric',
+            'batas_sedang_akhir' => 'required|numeric',
+            'batas_mahal_awal' => 'required|numeric',
+            'batas_mahal_puncak' => 'required|numeric',
+            'batas_mahal_akhir' => 'required|numeric',
         ]);
 
-        // Simpan boundaries baru, atau update jika sudah ada (misal hanya 1 baris)
-        $boundary = FuzzyBoundary::first();
-        if ($boundary) {
-            $boundary->update($request->only(['batas1','batas2','batas3','batas4']));
-        } else {
-            FuzzyBoundary::create($request->only(['batas1','batas2','batas3','batas4']));
-        }
-        return back()->with('success', 'Batas berhasil disimpan!');
+        $boundaries = FuzzyBoundary::firstOrNew();
+
+        // Mapping input dari form ke 5 titik batas (P1-P5)
+        $boundaries->batas1 = $request->input('batas_murah_awal');
+        $boundaries->batas2 = $request->input('batas_murah_puncak');
+        $boundaries->batas3 = $request->input('batas_sedang_puncak');
+        $boundaries->batas4 = $request->input('batas_mahal_awal');
+        $boundaries->batas5 = $request->input('batas_mahal_puncak');
+        
+        $boundaries->save();
+
+        return redirect()->route('fuzzy.input')->with('success', 'Batas fuzzy berhasil disimpan!');
     }
 }

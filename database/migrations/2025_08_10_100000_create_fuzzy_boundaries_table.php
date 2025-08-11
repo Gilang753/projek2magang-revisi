@@ -14,6 +14,7 @@ return new class extends Migration
             $table->integer('batas2');
             $table->integer('batas3');
             $table->integer('batas4');
+            $table->integer('batas5'); // Kolom baru
             $table->timestamps();
         });
     }
