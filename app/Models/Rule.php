@@ -1,0 +1,22 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Rule extends Model
+{
+    use HasFactory;
+
+    protected $fillable = [
+        'harga_fuzzy',
+        'rating_fuzzy',
+        'menu_id',
+    ];
+
+    public function menu()
+    {
+        return $this->belongsTo(Menu::class);
+    }
+}
