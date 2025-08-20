@@ -17,7 +17,7 @@ return new class extends Migration
             $table->id();
             $table->string('harga_fuzzy');
             $table->string('rating_fuzzy');
-            $table->foreignId('menu_id')->constrained('menus')->onDelete('cascade');
+            $table->foreignId('menu_id')->constrained('tb_menu')->onDelete('cascade');
             $table->timestamps();
         });
     }

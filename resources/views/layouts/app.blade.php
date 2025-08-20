@@ -47,11 +47,7 @@
                 <ul class="navbar-nav"> <li class="nav-item">
                         <a class="nav-link" href="{{ route('menus.index') }}">Daftar Menu</a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('rules.index') }}">
-                            <i class="fas fa-gavel me-1"></i> Rules
-                        </a>
-                    </li>
+                   
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="fuzzyDropdown" role="button" 
                             data-bs-toggle="dropdown" aria-expanded="false">
@@ -69,6 +65,11 @@
                                 </a>
                             </li>
                         </ul>
+                    </li>
+                     <li class="nav-item">
+                        <a class="nav-link" href="{{ route('rules.index') }}">
+                            <i class="fas fa-gavel me-1"></i> Rules
+                        </a>
                     </li>
                 </ul>
             </div>

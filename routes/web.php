@@ -3,8 +3,8 @@ use App\Http\Controllers\FuzzyBoundaryController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\FuzzyController;
-use App\Http\Controllers\FuzzyRatingController;
-use App\Http\Controllers\RuleController; // Tambahkan ini
+use App\Http\Controllers\RatingFuzzyController;
+use App\Http\Controllers\RuleController; 
 
 // Route untuk halaman utama
 Route::get('/', function () {
@@ -15,7 +15,7 @@ Route::get('/', function () {
 Route::resource('menus', MenuController::class);
 
 // Route untuk mengelola rules
-Route::resource('rules', RuleController::class); // Tambahkan ini
+Route::resource('rules', RuleController::class); 
 
 // Route untuk Fuzzy Harga
 Route::post('/fuzzy/boundaries', [FuzzyBoundaryController::class, 'store'])->name('fuzzy.boundaries.store');
@@ -26,10 +26,8 @@ Route::get('/fuzzy/input', [FuzzyController::class, 'showInputForm'])->name('fuz
 Route::post('/fuzzy/calculate', [FuzzyController::class, 'calculateMiu'])->name('fuzzy.calculate');
 
 // Route untuk Fuzzy Rating
-Route::prefix('fuzzy')->group(function() {
-    // Rating Routes
-    Route::get('rating', [FuzzyRatingController::class, 'inputRating'])->name('fuzzy.inputRating');
-    Route::post('rating/preview', [FuzzyRatingController::class, 'calculateRatingPreview'])->name('fuzzy.calculateRatingPreview');
-    Route::post('rating/calculate', [FuzzyRatingController::class, 'calculateRating'])->name('fuzzy.calculateRating');
-    Route::get('rating/result/{id}', [FuzzyRatingController::class, 'resultRating'])->name('fuzzy.resultRating');
+Route::prefix('fuzzy')->group(function () {
+    Route::get('/fuzzy/inputRating', [RatingFuzzyController::class, 'index'])->name('fuzzy.inputRating');
+    Route::post('/fuzzy/store-boundaries', [RatingFuzzyController::class, 'storeBoundaries'])->name('fuzzy.rating.boundaries.store');
+    Route::post('/fuzzy/calculate-rating', [RatingFuzzyController::class, 'calculate'])->name('fuzzy.rating.calculate');
 });
