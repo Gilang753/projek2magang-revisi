@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Rule;
 use App\Models\Menu;
+use App\Models\FuzzyInput;
+use App\Models\RatingHistory;
 use Illuminate\Http\Request;
 
 class RuleController extends Controller
@@ -91,4 +93,80 @@ public function update(Request $request, Rule $rule)
         
         return redirect()->route('rules.index')->with('sukses', 'Aturan berhasil dihapus.');
     }
+
+    // RuleController.php - tambahkan method ini
+public function execute()
+{
+    // Ambil data derajat keanggotaan terbaru
+    $lastHarga = FuzzyInput::latest()->first();
+    $lastRating = RatingHistory::latest()->first();
+    
+    // Jika tidak ada data, redirect dengan pesan error
+    if (!$lastHarga || !$lastRating) {
+        return redirect()->route('rules.index')->with('error', 'Data derajat keanggotaan belum tersedia. Silakan hitung terlebih dahulu di menu Fuzzy.');
+    }
+    
+    // Ambil semua aturan
+    $rules = Rule::with('menu')->get();
+    
+    // Simpan hasil inferensi
+    $inferenceResults = [];
+    
+    foreach ($rules as $rule) {
+        // Tentukan nilai alpha berdasarkan kombinasi harga dan rating
+        $alpha = 0;
+        
+        // Logika inferensi: ambil nilai minimum dari kedua derajat keanggotaan
+        switch ($rule->harga_fuzzy) {
+            case 'Murah':
+                $miuHarga = $lastHarga->miu_murah;
+                break;
+            case 'Sedang':
+                $miuHarga = $lastHarga->miu_sedang;
+                break;
+            case 'Mahal':
+                $miuHarga = $lastHarga->miu_mahal;
+                break;
+            default:
+                $miuHarga = 0;
+        }
+        
+        switch ($rule->rating_fuzzy) {
+            case 'Rendah':
+                $miuRating = $lastRating->miu_rendah;
+                break;
+            case 'Sedang':
+                $miuRating = $lastRating->miu_sedang;
+                break;
+            case 'Tinggi':
+                $miuRating = $lastRating->miu_tinggi;
+                break;
+            default:
+                $miuRating = 0;
+        }
+        
+        // Nilai alpha adalah minimum dari kedua derajat keanggotaan
+        $alpha = min($miuHarga, $miuRating);
+        
+        // Simpan hasil inferensi
+        $inferenceResults[] = [
+            'rule' => $rule,
+            'miu_harga' => $miuHarga,
+            'miu_rating' => $miuRating,
+            'alpha' => $alpha,
+            'menu' => $rule->menu
+        ];
+    }
+    
+    // Urutkan hasil berdasarkan alpha tertinggi (descending)
+    usort($inferenceResults, function($a, $b) {
+        return $b['alpha'] <=> $a['alpha'];
+    });
+    
+    // Ambil data menu untuk dropdown
+    $menus = Menu::all();
+    $rules = Rule::with('menu')->get();
+    
+    return view('rules.index', compact('menus', 'rules', 'inferenceResults', 'lastHarga', 'lastRating'));
+}
 }

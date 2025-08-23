@@ -16,6 +16,7 @@ Route::resource('menus', MenuController::class);
 
 // Route untuk mengelola rules
 Route::resource('rules', RuleController::class); 
+Route::post('/rules/execute', [RuleController::class, 'execute'])->name('rules.execute');
 
 // Route untuk Fuzzy Harga
 Route::post('/fuzzy/boundaries', [FuzzyBoundaryController::class, 'store'])->name('fuzzy.boundaries.store');

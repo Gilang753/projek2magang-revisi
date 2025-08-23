@@ -10,6 +10,7 @@
             {{-- Panggil Blade Component untuk menampilkan pesan peringatan --}}
             <x-alert/>
 
+            {{-- Card untuk Aturan Baru --}}
             <div class="card shadow-sm mb-4">
                 <div class="card-header bg-primary text-white">
                     <h5 class="mb-0">Aturan Baru</h5>
@@ -58,7 +59,8 @@
                 </div>
             </div>
 
-            <div class="card shadow-sm mt-4">
+            {{-- Card untuk List Rule dengan tombol eksekusi di footer --}}
+            <div class="card shadow-sm">
                 <div class="card-header bg-success text-white">
                     <h5 class="mb-0">List Rule</h5>
                 </div>
@@ -80,7 +82,7 @@
                                             IF Harga {{ $rule->harga_fuzzy }} And Rating {{ $rule->rating_fuzzy }} , Then Menu {{ $rule->menu->nama }}
                                         </td>
                                         <td class="text-center">
-                                        <a href="{{ route('rules.edit', $rule->id) }}" class="btn btn-warning btn-sm">Edit</a>
+                                            <a href="{{ route('rules.edit', $rule->id) }}" class="btn btn-warning btn-sm">Edit</a>
                                             <form action="{{ route('rules.destroy', $rule->id) }}" method="POST" class="d-inline">
                                                 @csrf
                                                 @method('DELETE')
@@ -97,7 +99,46 @@
                         </table>
                     </div>
                 </div>
+                <div class="card-footer bg-light">
+                    <div class="d-flex justify-content-end">
+                        <form action="{{ route('rules.execute') }}" method="POST">
+                            @csrf
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-play-circle me-1"></i> Eksekusi Rule
+                            </button>
+                        </form>
+                    </div>
+                </div>
             </div>
+
+            {{-- Hasil Eksekusi dengan jarak dari tabel list rule --}}
+            @if(isset($inferenceResults) && count($inferenceResults) > 0)
+            <div class="card shadow-sm mt-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Hasil Eksekusi Rule</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-2">
+                        <small class="text-muted">
+                            Input: Harga Rp. {{ number_format($lastHarga->harga, 0, ',', '.') }}, 
+                            Rating {{ $lastRating->rating }}
+                        </small>
+                    </div>
+                    
+                    @foreach ($inferenceResults as $index => $result)
+                        <div class="mb-2 p-2 border-bottom">
+                            IF Harga <strong>{{ $result['rule']->harga_fuzzy }}</strong> 
+                            ({{ number_format($result['miu_harga'], 3) }}) 
+                            And Rating <strong>{{ $result['rule']->rating_fuzzy }}</strong> 
+                            ({{ number_format($result['miu_rating'], 3) }}) 
+                            Then Menu <strong>{{ $result['menu']->nama }}</strong> 
+                            ({{ number_format($result['alpha'], 3) }})
+                        </div>
+                    @endforeach
+                    
+                </div>
+            </div>
+            @endif
         </div>
     </div>
 </div>

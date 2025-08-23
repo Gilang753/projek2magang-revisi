@@ -121,52 +121,18 @@
         </div>
     </form>
     
-   @if(session('results'))
+   @if(!empty($results))
     <div class="card mt-4">
         <div class="card-header bg-primary text-white">
-            Hasil Perhitungan untuk Rating {{ session('results')['rating'] }}
+            Hasil Perhitungan untuk Rating {{ $results['rating'] }}
         </div>
         <ul class="list-group list-group-flush">
-            <li class="list-group-item">Derajat Keanggotaan Rendah: <span class="fw-bold">{{ number_format(session('results')['miu_rendah'], 3) }}</span></li>
-            <li class="list-group-item">Derajat Keanggotaan Sedang: <span class="fw-bold">{{ number_format(session('results')['miu_sedang'], 3) }}</span></li>
-            <li class="list-group-item">Derajat Keanggotaan Tinggi: <span class="fw-bold">{{ number_format(session('results')['miu_tinggi'], 3) }}</span></li>
+            <li class="list-group-item">Derajat Keanggotaan Rendah: <span class="fw-bold">{{ number_format($results['miu_rendah'], 3) }}</span></li>
+            <li class="list-group-item">Derajat Keanggotaan Sedang: <span class="fw-bold">{{ number_format($results['miu_sedang'], 3) }}</span></li>
+            <li class="list-group-item">Derajat Keanggotaan Tinggi: <span class="fw-bold">{{ number_format($results['miu_tinggi'], 3) }}</span></li>
         </ul>
     </div>
 @endif
-</div>
-
-<div class="container mt-5" style="max-width: 1200px;">
-    <h3 class="text-center mb-4">Riwayat Perhitungan</h3>
-    @if ($histories->isEmpty())
-        <div class="alert alert-info text-center">Belum ada data perhitungan.</div>
-    @else
-        <div class="table-responsive">
-            <table class="table table-bordered table-striped">
-                <thead class="table-dark">
-                    <tr>
-                        <th>Waktu</th>
-                        <th>Nilai Rating</th>
-                        <th>Batasan (P1-P5)</th>
-                        <th>Miu Rendah</th>
-                        <th>Miu Sedang</th>
-                        <th>Miu Tinggi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($histories as $item)
-                    <tr>
-                        <td>{{ $item->created_at->format('d-m-Y H:i:s') }}</td>
-                        <td>{{ $item->rating }}</td>
-                        <td>{{ $item->p1 }} - {{ $item->p2 }} - {{ $item->p3 }} - {{ $item->p4 }} - {{ $item->p5 }}</td>
-                        <td>{{ number_format($item->miu_rendah, 3) }}</td>
-                        <td>{{ number_format($item->miu_sedang, 3) }}</td>
-                        <td>{{ number_format($item->miu_tinggi, 3) }}</td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-    @endif
 </div>
 @endsection
 

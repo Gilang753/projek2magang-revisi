@@ -121,52 +121,18 @@
         </div>
     </form>
     
-    @if(isset($results) && !empty($results))
-        <div class="card mt-4">
-            <div class="card-header bg-primary text-white">
-                Hasil Perhitungan untuk Harga Rp. {{ number_format($results['harga'], 0, ',', '.') }}
-            </div>
-            <ul class="list-group list-group-flush">
-                <li class="list-group-item">Derajat Keanggotaan Murah: <span class="fw-bold">{{ number_format($results['miu_murah'], 3) }}</span></li>
-                <li class="list-group-item">Derajat Keanggotaan Sedang: <span class="fw-bold">{{ number_format($results['miu_sedang'], 3) }}</span></li>
-                <li class="list-group-item">Derajat Keanggotaan Mahal: <span class="fw-bold">{{ number_format($results['miu_mahal'], 3) }}</span></li>
-            </ul>
+    @if(!empty($results))
+    <div class="card mt-4">
+        <div class="card-header bg-primary text-white">
+            Hasil Perhitungan untuk Harga Rp. {{ number_format($results['harga'], 0, ',', '.') }}
         </div>
-    @endif
-</div>
-
-<div class="container mt-5" style="max-width: 1200px;">
-    <h3 class="text-center mb-4">Histori Pencarian</h3>
-    @if ($data->isEmpty())
-        <div class="alert alert-info text-center">Belum ada data pencarian.</div>
-    @else
-        <div class="table-responsive">
-            <table class="table table-bordered table-striped">
-                <thead class="table-dark">
-                    <tr>
-                        <th>Waktu</th>
-                        <th>Harga Input</th>
-                        <th>Batasan (P1-P5)</th>
-                        <th>Miu Murah</th>
-                        <th>Miu Sedang</th>
-                        <th>Miu Mahal</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach ($data as $item)
-                    <tr>
-                        <td>{{ $item->created_at->format('d-m-Y H:i:s') }}</td>
-                        <td>Rp. {{ number_format($item->harga, 0, ',', '.') }}</td>
-                        <td>{{ number_format($item->p1) }} - {{ number_format($item->p2) }} - {{ number_format($item->p3) }} - {{ number_format($item->p4) }} - {{ number_format($item->p5) }}</td>
-                        <td>{{ number_format($item->miu_murah, 3) }}</td>
-                        <td>{{ number_format($item->miu_sedang, 3) }}</td>
-                        <td>{{ number_format($item->miu_mahal, 3) }}</td>
-                    </tr>
-                    @endforeach
-                </tbody>
-            </table>
-        </div>
-    @endif
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">Derajat Keanggotaan Murah: <span class="fw-bold">{{ number_format($results['miu_murah'], 3) }}</span></li>
+            <li class="list-group-item">Derajat Keanggotaan Sedang: <span class="fw-bold">{{ number_format($results['miu_sedang'], 3) }}</span></li>
+            <li class="list-group-item">Derajat Keanggotaan Mahal: <span class="fw-bold">{{ number_format($results['miu_mahal'], 3) }}</span></li>
+        </ul>
+    </div>
+@endif
 </div>
 @endsection
 
