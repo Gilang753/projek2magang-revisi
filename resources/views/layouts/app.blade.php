@@ -71,6 +71,11 @@
                             <i class="fas fa-gavel me-1"></i> Rules
                         </a>
                     </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('user.index') }}">
+                                <i class="fas fa-user me-1"></i> User
+                            </a>
+                        </li>
                 </ul>
             </div>
         </div>

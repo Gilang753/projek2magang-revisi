@@ -83,4 +83,35 @@ public function calculate(Request $request)
 
     return redirect()->route('fuzzy.inputRating')->with('success', 'Perhitungan berhasil disimpan!');
 }
+    /**
+     * Store/update fuzzy rating boundaries from form input.
+     */
+    public function storeBoundaries(Request $request)
+    {
+        $request->validate([
+            'batas_rendah_awal' => 'required|numeric',
+            'batas_rendah_puncak' => 'required|numeric',
+            'batas_rendah_akhir' => 'required|numeric',
+            'batas_sedang_awal' => 'required|numeric',
+            'batas_sedang_puncak' => 'required|numeric',
+            'batas_sedang_akhir' => 'required|numeric',
+            'batas_tinggi_awal' => 'required|numeric',
+            'batas_tinggi_puncak' => 'required|numeric',
+            'batas_tinggi_akhir' => 'required|numeric',
+        ]);
+
+        $boundaries = \App\Models\RatingBoundary::firstOrNew();
+        $boundaries->batas_rendah_awal = $request->batas_rendah_awal;
+        $boundaries->batas_rendah_puncak = $request->batas_rendah_puncak;
+        $boundaries->batas_rendah_akhir = $request->batas_rendah_akhir;
+        $boundaries->batas_sedang_awal = $request->batas_sedang_awal;
+        $boundaries->batas_sedang_puncak = $request->batas_sedang_puncak;
+        $boundaries->batas_sedang_akhir = $request->batas_sedang_akhir;
+        $boundaries->batas_tinggi_awal = $request->batas_tinggi_awal;
+        $boundaries->batas_tinggi_puncak = $request->batas_tinggi_puncak;
+        $boundaries->batas_tinggi_akhir = $request->batas_tinggi_akhir;
+        $boundaries->save();
+
+        return redirect()->route('fuzzy.inputRating')->with('success', 'Batas fuzzy rating berhasil disimpan!');
+    }
 }

@@ -32,3 +32,9 @@ Route::prefix('fuzzy')->group(function () {
     Route::post('/fuzzy/store-boundaries', [RatingFuzzyController::class, 'storeBoundaries'])->name('fuzzy.rating.boundaries.store');
     Route::post('/fuzzy/calculate-rating', [RatingFuzzyController::class, 'calculate'])->name('fuzzy.rating.calculate');
 });
+
+// Route untuk halaman user
+
+use App\Http\Controllers\UserPageController;
+Route::get('/user', [UserPageController::class, 'index'])->name('user.index');
+Route::post('/user/execute-rule', [UserPageController::class, 'executeRule'])->name('user.executeRule');
