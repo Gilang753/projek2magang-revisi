@@ -4,30 +4,42 @@
 
 @section('content')
 <div class="container">
-    <h2 class="mb-3">Daftar Menu</h2>
+    <h2 class="mb-3">Daftar Menu Makanan</h2>
     <div class="row mb-4">
         @if(isset($menus) && count($menus) > 0)
-            @foreach($menus as $menu)
-                <div class="col-md-4 mb-3">
-                    <div class="card h-100">
-                        @if(isset($menu->gambar) && $menu->gambar)
-                            <img src="{{ asset('storage/' . $menu->gambar) }}" class="card-img-top" alt="{{ $menu->nama }}" style="height:180px;object-fit:cover;">
-                        @else
-                            <img src="https://via.placeholder.com/300x180?text=No+Image" class="card-img-top" alt="No Image" style="height:180px;object-fit:cover;">
-                        @endif
-                        <div class="card-body text-center">
-                            <h5 class="card-title">{{ $menu->nama }}</h5>
+        <div class="row">
+        @foreach($menus as $menu)
+        <div class="col-md-4 mb-4">
+                <div class="card h-100">
+                    @if($menu->gambar)
+                        <img src="{{ asset('storage/'.$menu->gambar) }}" class="card-img-top" style="height: 180px; object-fit: cover;" alt="{{ $menu->nama }}">
+                    @else
+                        <img src="{{ asset('images/tidak-ada-gambar.jpg') }}" class="card-img-top" style="height: 180px; object-fit: cover;" alt="Tidak ada gambar">
+                    @endif
+                    <div class="card-body">
+                        <h5 class="card-title">{{ $menu->nama }}</h5>
+                        <p class="card-text text-muted mb-2">
+                            {{ Str::limit($menu->deskripsi, 100) }}
+                        </p>
+                        <p class="card-text">
+                            <strong>Rp {{ number_format($menu->harga_seporsi, 0, ',', '.') }}</strong><br>
+                            <span class="text-muted">{{ ucfirst($menu->cita_rasa) }}</span>
+                        </p>
+                        <div class="text-warning">
+                            {{ str_repeat('★', $menu->rating) }}{{ str_repeat('☆', 5 - $menu->rating) }}
                         </div>
                     </div>
                 </div>
-            @endforeach
+            </a>
+        </div>
+        @endforeach
+    </div>
         @else
             <div class="col-12">
                 <p class="text-muted">Belum ada menu yang tersedia.</p>
             </div>
         @endif
     </div>
-    <h1 class="mb-4">Halaman User</h1>
     <div class="card">
         <div class="card-body">
             <form action="{{ route('user.executeRule') }}" method="POST">

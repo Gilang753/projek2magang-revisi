@@ -79,7 +79,7 @@
                                     <tr>
                                         <td class="text-center">{{ $loop->iteration }}</td>
                                         <td>
-                                            IF Harga {{ $rule->harga_fuzzy }} And Rating {{ $rule->rating_fuzzy }} , Then Menu {{ $rule->menu->nama }}
+                                        IF Harga {{ $rule->harga_fuzzy }} And Rating {{ $rule->rating_fuzzy }} , Then Menu {{ $rule->menu?->nama ?? 'Menu Tidak Ditemukan' }}
                                         </td>
                                         <td class="text-center">
                                             <a href="{{ route('rules.edit', $rule->id) }}" class="btn btn-warning btn-sm">Edit</a>
