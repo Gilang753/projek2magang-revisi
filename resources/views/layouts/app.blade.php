@@ -44,7 +44,9 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav"> <li class="nav-item">
+                @if(session('admin_logged_in'))
+                <ul class="navbar-nav"> 
+                    <li class="nav-item">
                         <a class="nav-link" href="{{ route('menus.index') }}">Daftar Menu</a>
                     </li>
                    
@@ -71,34 +73,32 @@
                             <i class="fas fa-gavel me-1"></i> Rules
                         </a>
                     </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="{{ route('user.index') }}">
-                                <i class="fas fa-user me-1"></i> User
-                            </a>
-                        </li>
+                   
+                </ul>
+                @endif
+                
+                <ul class="navbar-nav ms-auto">
+                    @if(session('admin_logged_in'))
+                    <li class="nav-item">
+                        <form action="{{ route('admin.logout') }}" method="POST" class="d-inline">
+                            @csrf
+                            <button type="submit" class="btn btn-outline-light btn-sm">Logout</button>
+                        </form>
+                    </li>
+                    @else
+                    <li class="nav-item">
+                        <a href="{{ route('admin.login') }}" class="btn btn-outline-light btn-sm">Login Admin</a>
+                    </li>
+                    @endif
                 </ul>
             </div>
         </div>
     </nav>
+    
     <div class="container mt-4">
-        {{-- Hapus kode ini untuk menghindari duplikasi --}}
-        {{--
-        @if(session('sukses'))
-            <div class="alert alert-success alert-dismissible fade show">
-                {{ session('sukses') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        @endif
-        @if(session('error'))
-            <div class="alert alert-danger alert-dismissible fade show">
-                {{ session('error') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        @endif
-        --}}
-
         @yield('content')
     </div>
+    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
