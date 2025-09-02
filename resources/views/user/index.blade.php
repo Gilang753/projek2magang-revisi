@@ -33,7 +33,7 @@
             </a>
         </div>
         @endforeach
-    </div>
+        </div>
         @else
             <div class="col-12">
                 <p class="text-muted">Belum ada menu yang tersedia.</p>
@@ -52,10 +52,21 @@
                     <label for="rating" class="form-label">Input Rating</label>
                     <input type="number" step="any" min="0" max="100" name="rating" id="rating" class="form-control" required>
                 </div>
+                <div class="mb-3">
+                    <label for="rasa" class="form-label">Input Rasa</label>
+                    <input type="number" step="any" min="0" max="100" name="rasa" id="rasa" class="form-control" required>
+                </div>
                 <button type="submit" class="btn btn-success">
                     <i class="fas fa-play-circle me-1"></i> Eksekusi Rule
                 </button>
             </form>
+            <p class="text-muted mt-3" style="font-size: 1rem; line-height: 1.5;">
+                <span class="fw-bold">Keterangan Rasa:</span><br>
+                0 - 30 = Asam<br>
+                20 - 40 = Manis<br>
+                50 - 70 = Pedas<br>
+                75 - 100 = Asin
+            </p>
 
             @if(isset($inferenceResults) && count($inferenceResults) > 0)
                 <hr>

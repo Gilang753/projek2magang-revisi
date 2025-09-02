@@ -7,6 +7,7 @@ use App\Http\Controllers\RatingFuzzyController;
 use App\Http\Controllers\RuleController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserPageController;
+use App\Http\Controllers\RasaFuzzyController;
 
 // Route untuk halaman utama
 Route::get('/', function () {
@@ -45,4 +46,12 @@ Route::middleware(['admin.auth'])->group(function () {
         Route::post('/fuzzy/store-boundaries', [RatingFuzzyController::class, 'storeBoundaries'])->name('fuzzy.rating.boundaries.store');
         Route::post('/fuzzy/calculate-rating', [RatingFuzzyController::class, 'calculate'])->name('fuzzy.rating.calculate');
     });
+
+    // Route untuk Fuzzy Rasa
+    Route::prefix('fuzzy/rasa')->group(function () {
+        Route::get('/', [RasaFuzzyController::class, 'index'])->name('fuzzy.inputRasa');
+        Route::post('/store-boundaries', [RasaFuzzyController::class, 'storeBoundaries'])->name('fuzzy.rasa.boundaries.store');
+        Route::post('/calculate-rasa', [RasaFuzzyController::class, 'calculate'])->name('fuzzy.rasa.calculate');
+    });
+        
 });

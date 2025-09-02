@@ -12,32 +12,55 @@
     @stack('styles')
 
     <style>
+        body {
+            background-color: #f8f9fa;
+        }
         .navbar-brand {
-            font-size: 1.75rem; /* Mengubah ukuran font nama brand */
+            font-size: 1.75rem;
             font-weight: bold;
         }
         .navbar .dropdown-menu {
             border: none;
             box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.1);
+            border-radius: 0.5rem;
         }
         .navbar .dropdown-item {
-            padding: 0.5rem 1.5rem;
+            padding: 0.75rem 1.5rem;
             transition: all 0.3s;
+            font-weight: 500;
         }
         .navbar .dropdown-item:hover {
-            background-color: #f8f9fa;
-            padding-left: 1.8rem;
+            background-color: #e9ecef;
+            padding-left: 2rem;
+            color: #212529;
         }
         .navbar .dropdown-item i {
             width: 20px;
             margin-right: 10px;
             text-align: center;
         }
+        .navbar-nav .nav-link {
+            font-weight: 600;
+            transition: color 0.3s ease;
+        }
+        .navbar-nav .nav-link:hover {
+            color: #d8d8d8 !important;
+        }
+        .btn-outline-light {
+            border-radius: 50px;
+            padding: 8px 20px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        .btn-outline-light:hover {
+            background-color: #fff;
+            color: #212529 !important;
+        }
     </style>
 </head>
 <body>
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
         <div class="container">
             <a class="navbar-brand" href="{{ url('/') }}">Rumah Makan</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -49,7 +72,7 @@
                     <li class="nav-item">
                         <a class="nav-link" href="{{ route('menus.index') }}">Daftar Menu</a>
                     </li>
-                   
+                    
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="fuzzyDropdown" role="button" 
                             data-bs-toggle="dropdown" aria-expanded="false">
@@ -66,14 +89,19 @@
                                     <i class="fas fa-star me-1"></i> Fuzzy Rating
                                 </a>
                             </li>
+                            <li>
+                                <a class="dropdown-item" href="{{ route('fuzzy.inputRasa') }}">
+                                    <i class="fas fa-utensils me-1"></i> Fuzzy Rasa
+                                </a>
+                            </li>
                         </ul>
                     </li>
-                     <li class="nav-item">
+                    <li class="nav-item">
                         <a class="nav-link" href="{{ route('rules.index') }}">
                             <i class="fas fa-gavel me-1"></i> Rules
                         </a>
                     </li>
-                   
+                    
                 </ul>
                 @endif
                 
