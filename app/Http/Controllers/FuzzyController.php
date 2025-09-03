@@ -38,17 +38,26 @@ public function calculateMiu(Request $request)
         return redirect()->route('fuzzy.input')->with('error', 'Batas fuzzy belum diatur. Silakan simpan batas terlebih dahulu.');
     }
 
-    $p1 = (float) $boundaries->batas1;
-    $p2 = (float) $boundaries->batas2;
-    $p3 = (float) $boundaries->batas3;
-    $p4 = (float) $boundaries->batas4;
-    $p5 = (float) $boundaries->batas5;
+    // Ambil batas fuzzy detail
+    $murah_awal = (float) $boundaries->batas_murah_awal;
+    $murah_puncak = (float) $boundaries->batas_murah_puncak;
+    $murah_akhir = (float) $boundaries->batas_murah_akhir;
+    $sedang_awal = (float) $boundaries->batas_sedang_awal;
+    $sedang_puncak = (float) $boundaries->batas_sedang_puncak;
+    $sedang_akhir = (float) $boundaries->batas_sedang_akhir;
+    $mahal_awal = (float) $boundaries->batas_mahal_awal;
+    $mahal_puncak = (float) $boundaries->batas_mahal_puncak;
+    $mahal_akhir = (float) $boundaries->batas_mahal_akhir;
 
-    // Hitung miu dengan fungsi yang benar
+    // Hitung miu dengan fungsi dan parameter yang benar
+    // Perbaiki urutan parameter agar sesuai logika fuzzy
     $miu = [
-        'murah' => $this->getMiuMurah($harga, $p1, $p2),
-        'sedang' => $this->getMiuSegitiga($harga, $p2, $p3, $p4),
-        'mahal' => $this->getMiuMahal($harga, $p4, $p5),
+        // Murah: puncak, akhir
+        'murah' => $this->getMiuMurah($harga, $murah_puncak, $murah_akhir),
+        // Sedang: awal, puncak, akhir
+        'sedang' => $this->getMiuSegitiga($harga, $sedang_awal, $sedang_puncak, $sedang_akhir),
+        // Mahal: awal, puncak
+        'mahal' => $this->getMiuMahal($harga, $mahal_awal, $mahal_puncak),
     ];
 
     // Hapus semua data sebelumnya
@@ -57,11 +66,11 @@ public function calculateMiu(Request $request)
     // Simpan data baru ke database
     FuzzyInput::create([
         'harga' => $harga,
-        'p1' => $p1,
-        'p2' => $p2,
-        'p3' => $p3,
-        'p4' => $p4,
-        'p5' => $p5,
+        'p1' => $murah_awal,
+        'p2' => $murah_puncak,
+        'p3' => $sedang_puncak,
+        'p4' => $sedang_akhir,
+        'p5' => $mahal_akhir,
         'miu_murah' => $miu['murah'],
         'miu_sedang' => $miu['sedang'],
         'miu_mahal' => $miu['mahal'],

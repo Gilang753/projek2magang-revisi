@@ -13,13 +13,10 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('rules', function (Blueprint $table) {
-            $table->id();
-            $table->string('harga_fuzzy');
-            $table->string('rating_fuzzy');
-            $table->string('rasa_fuzzy');
-            $table->foreignId('menu_id')->constrained('tb_menu')->onDelete('cascade');
-            $table->timestamps();
+        Schema::table('rules', function (Blueprint $table) {
+            if (!Schema::hasColumn('rules', 'rasa_fuzzy')) {
+                $table->string('rasa_fuzzy')->after('rating_fuzzy');
+            }
         });
     }
 
@@ -30,6 +27,10 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('rules');
+        Schema::table('rules', function (Blueprint $table) {
+            if (Schema::hasColumn('rules', 'rasa_fuzzy')) {
+                $table->dropColumn('rasa_fuzzy');
+            }
+        });
     }
 };
