@@ -12,6 +12,7 @@ class Rule extends Model
     protected $fillable = [
         'harga_fuzzy',
         'rating_fuzzy',
+        'rasa_fuzzy',
         'menu_id',
     ];
 

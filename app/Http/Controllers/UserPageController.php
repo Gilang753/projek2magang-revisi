@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\FuzzyBoundary;
 use App\Models\FuzzyInput;
-use App\Models\RatingBoundary; // Pastikan nama model sesuai
+use App\Models\RatingBoundary;
 use App\Models\RatingHistory;
+use App\Models\RasaBoundary; // Tambahkan ini
+use App\Models\RasaHistory;  // Tambahkan ini
 use App\Models\Rule;
 use App\Models\Menu;
 
@@ -23,6 +25,7 @@ class UserPageController extends Controller
         $request->validate([
             'harga' => 'required|numeric|min:0',
             'rating' => 'required|numeric|min:0|max:100',
+            'rasa' => 'required|numeric|min:0|max:100', // Tambahkan validasi untuk rasa
         ]);
 
         // Proses fuzzy harga
@@ -66,7 +69,7 @@ class UserPageController extends Controller
 
         // Proses fuzzy rating
         $rating = (float) $request->input('rating');
-        $ratingBoundaries = RatingBoundary::first(); // Pastikan model ini ada
+        $ratingBoundaries = RatingBoundary::first();
         if (!$ratingBoundaries) {
             return back()->with('error', 'Batas fuzzy rating belum diatur.');
         }
@@ -102,6 +105,62 @@ class UserPageController extends Controller
             'miu_tinggi' => $miu_tinggi,
         ]);
 
+        // PROSES FUZZY RASA - TAMBAHAN BARU
+        $rasa = (float) $request->input('rasa');
+        $rasaBoundaries = RasaBoundary::first();
+        if (!$rasaBoundaries) {
+            return back()->with('error', 'Batas fuzzy rasa belum diatur.');
+        }
+        
+        // Hitung miu rasa
+        $miu_asam = $miu_manis = $miu_pedas = $miu_asin = 0;
+        
+        // Calculate miu_asam (Sour) - Left Shoulder Curve
+        if ($rasa <= $rasaBoundaries->batas_asam_puncak) {
+            $miu_asam = 1;
+        } elseif ($rasa > $rasaBoundaries->batas_asam_puncak && $rasa < $rasaBoundaries->batas_asam_akhir) {
+            $miu_asam = ($rasaBoundaries->batas_asam_akhir - $rasa) / 
+                        ($rasaBoundaries->batas_asam_akhir - $rasaBoundaries->batas_asam_puncak);
+        }
+
+        // Calculate miu_manis (Sweet) - Triangular Curve
+        if ($rasa > $rasaBoundaries->batas_manis_awal && $rasa <= $rasaBoundaries->batas_manis_puncak) {
+            $miu_manis = ($rasa - $rasaBoundaries->batas_manis_awal) / 
+                         ($rasaBoundaries->batas_manis_puncak - $rasaBoundaries->batas_manis_awal);
+        } elseif ($rasa > $rasaBoundaries->batas_manis_puncak && $rasa < $rasaBoundaries->batas_manis_akhir) {
+            $miu_manis = ($rasaBoundaries->batas_manis_akhir - $rasa) / 
+                         ($rasaBoundaries->batas_manis_akhir - $rasaBoundaries->batas_manis_puncak);
+        } elseif ($rasa == $rasaBoundaries->batas_manis_puncak) {
+            $miu_manis = 1;
+        }
+
+        // Calculate miu_pedas (Spicy) - Triangular Curve
+        if ($rasa > $rasaBoundaries->batas_pedas_awal && $rasa <= $rasaBoundaries->batas_pedas_puncak) {
+            $miu_pedas = ($rasa - $rasaBoundaries->batas_pedas_awal) / 
+                         ($rasaBoundaries->batas_pedas_puncak - $rasaBoundaries->batas_pedas_awal);
+        } elseif ($rasa > $rasaBoundaries->batas_pedas_puncak && $rasa < $rasaBoundaries->batas_pedas_akhir) {
+            $miu_pedas = ($rasaBoundaries->batas_pedas_akhir - $rasa) / 
+                         ($rasaBoundaries->batas_pedas_akhir - $rasaBoundaries->batas_pedas_puncak);
+        } elseif ($rasa == $rasaBoundaries->batas_pedas_puncak) {
+            $miu_pedas = 1;
+        }
+        
+        // Calculate miu_asin (Salty) - Right Shoulder Curve
+        if ($rasa > $rasaBoundaries->batas_asin_awal && $rasa < $rasaBoundaries->batas_asin_puncak) {
+            $miu_asin = ($rasa - $rasaBoundaries->batas_asin_awal) / 
+                        ($rasaBoundaries->batas_asin_puncak - $rasaBoundaries->batas_asin_awal);
+        } elseif ($rasa >= $rasaBoundaries->batas_asin_puncak) {
+            $miu_asin = 1;
+        }
+        
+        $rasaHistory = RasaHistory::create([
+            'rasa' => $rasa,
+            'miu_asam' => $miu_asam,
+            'miu_manis' => $miu_manis,
+            'miu_pedas' => $miu_pedas,
+            'miu_asin' => $miu_asin,
+        ]);
+
         // Eksekusi rule
         $rules = Rule::with('menu')->get();
         $inferenceResults = [];
@@ -121,11 +180,21 @@ class UserPageController extends Controller
                 default: $miuRating = 0;
             }
             
-            $alpha = min($miuHarga, $miuRating);
+            // TAMBAHAN: Logika untuk rasa
+            switch ($rule->rasa_fuzzy) {
+                case 'Asam': $miuRasa = $rasaHistory->miu_asam; break;
+                case 'Manis': $miuRasa = $rasaHistory->miu_manis; break;
+                case 'Pedas': $miuRasa = $rasaHistory->miu_pedas; break;
+                case 'Asin': $miuRasa = $rasaHistory->miu_asin; break;
+                default: $miuRasa = 0;
+            }
+            
+            $alpha = min($miuHarga, $miuRating, $miuRasa);
             $inferenceResults[] = [
                 'rule' => $rule,
                 'miu_harga' => $miuHarga,
                 'miu_rating' => $miuRating,
+                'miu_rasa' => $miuRasa, // Tambahkan ini
                 'alpha' => $alpha,
                 'menu' => $rule->menu
             ];
@@ -138,7 +207,8 @@ class UserPageController extends Controller
         $menus = Menu::all();
         $hargaInput = $harga;
         $ratingInput = $rating;
+        $rasaInput = $rasa; // Tambahkan ini
         
-        return view('user.index', compact('inferenceResults', 'menus', 'hargaInput', 'ratingInput'));
+        return view('user.index', compact('inferenceResults', 'menus', 'hargaInput', 'ratingInput', 'rasaInput'));
     }
 }

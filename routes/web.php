@@ -8,6 +8,7 @@ use App\Http\Controllers\RuleController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserPageController;
 use App\Http\Controllers\RasaFuzzyController;
+use App\Http\Controllers\RekomendasiFuzzyController;
 
 // Route untuk halaman utama
 Route::get('/', function () {
@@ -54,4 +55,10 @@ Route::middleware(['admin.auth'])->group(function () {
         Route::post('/calculate-rasa', [RasaFuzzyController::class, 'calculate'])->name('fuzzy.rasa.calculate');
     });
         
+
+    // Route untuk Fuzzy Rekomendasi
+Route::prefix('fuzzy/rekomendasi')->group(function () {
+    Route::get('/', [RekomendasiFuzzyController::class, 'index'])->name('fuzzy.inputRekomendasi');
+    Route::post('/store-boundaries', [RekomendasiFuzzyController::class, 'storeBoundaries'])->name('fuzzy.rekomendasi.boundaries.store');
+});
 });

@@ -6,8 +6,6 @@
 <div class="container">
     <div class="row">
         <div class="col-md-12">
-            
-            {{-- Panggil Blade Component untuk menampilkan pesan peringatan --}}
             <x-alert/>
 
             {{-- Card untuk Aturan Baru --}}
@@ -22,7 +20,7 @@
                             <div class="col-auto">
                                 <label class="form-label">IF Harga</label>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-2">
                                 <select class="form-select" name="harga_fuzzy">
                                     <option value="Murah">Murah</option>
                                     <option value="Sedang">Sedang</option>
@@ -32,7 +30,7 @@
                             <div class="col-auto">
                                 <label class="form-label">And Rating</label>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-2">
                                 <select class="form-select" name="rating_fuzzy">
                                     <option value="Rendah">Rendah</option>
                                     <option value="Sedang">Sedang</option>
@@ -40,9 +38,20 @@
                                 </select>
                             </div>
                             <div class="col-auto">
+                                <label class="form-label">And Rasa</label>
+                            </div>
+                            <div class="col-md-2">
+                                <select class="form-select" name="rasa_fuzzy">
+                                    <option value="Asam">Asam</option>
+                                    <option value="Manis">Manis</option>
+                                    <option value="Pedas">Pedas</option>
+                                    <option value="Asin">Asin</option>
+                                </select>
+                            </div>
+                            <div class="col-auto">
                                 <label class="form-label">Then</label>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-2">
                                 <select class="form-select" name="menu_id">
                                     @foreach($menus as $menu)
                                         <option value="{{ $menu->id }}">{{ $menu->nama }}</option>
@@ -59,7 +68,7 @@
                 </div>
             </div>
 
-            {{-- Card untuk List Rule dengan tombol eksekusi di footer --}}
+            {{-- Card untuk List Rule --}}
             <div class="card shadow-sm">
                 <div class="card-header bg-success text-white">
                     <h5 class="mb-0">List Rule</h5>
@@ -79,7 +88,7 @@
                                     <tr>
                                         <td class="text-center">{{ $loop->iteration }}</td>
                                         <td>
-                                        IF Harga {{ $rule->harga_fuzzy }} And Rating {{ $rule->rating_fuzzy }} , Then Menu {{ $rule->menu?->nama ?? 'Menu Tidak Ditemukan' }}
+                                            IF Harga {{ $rule->harga_fuzzy }} And Rating {{ $rule->rating_fuzzy }} And Rasa {{ $rule->rasa_fuzzy }}, Then Menu {{ $rule->menu?->nama ?? 'Menu Tidak Ditemukan' }}
                                         </td>
                                         <td class="text-center">
                                             <a href="{{ route('rules.edit', $rule->id) }}" class="btn btn-warning btn-sm">Edit</a>
@@ -111,7 +120,7 @@
                 </div>
             </div>
 
-            {{-- Hasil Eksekusi dengan jarak dari tabel list rule --}}
+            {{-- Hasil Eksekusi --}}
             @if(isset($inferenceResults) && count($inferenceResults) > 0)
             <div class="card shadow-sm mt-4">
                 <div class="card-header bg-info text-white">
@@ -121,7 +130,8 @@
                     <div class="mb-2">
                         <small class="text-muted">
                             Input: Harga Rp. {{ number_format($lastHarga->harga, 0, ',', '.') }}, 
-                            Rating {{ $lastRating->rating }}
+                            Rating {{ $lastRating->rating }},
+                            Rasa {{ $lastRasa->rasa }}
                         </small>
                     </div>
                     
@@ -131,11 +141,12 @@
                             ({{ number_format($result['miu_harga'], 3) }}) 
                             And Rating <strong>{{ $result['rule']->rating_fuzzy }}</strong> 
                             ({{ number_format($result['miu_rating'], 3) }}) 
+                            And Rasa <strong>{{ $result['rule']->rasa_fuzzy }}</strong>
+                            ({{ number_format($result['miu_rasa'], 3) }})
                             Then Menu <strong>{{ $result['menu']->nama }}</strong> 
                             ({{ number_format($result['alpha'], 3) }})
                         </div>
                     @endforeach
-                    
                 </div>
             </div>
             @endif

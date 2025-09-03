@@ -94,6 +94,11 @@
                                     <i class="fas fa-utensils me-1"></i> Fuzzy Rasa
                                 </a>
                             </li>
+                            <li>
+    <a class="dropdown-item" href="{{ route('fuzzy.inputRekomendasi') }}">
+        <i class="fas fa-thumbs-up me-1"></i> Fuzzy Rekomendasi
+    </a>
+</li>
                         </ul>
                     </li>
                     <li class="nav-item">

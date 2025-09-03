@@ -20,7 +20,7 @@
                             <div class="col-auto">
                                 <label class="form-label">Jika Harga</label>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-2">
                                 <select class="form-select" name="harga_fuzzy">
                                     <option value="Murah" {{ $rule->harga_fuzzy == 'Murah' ? 'selected' : '' }}>Murah</option>
                                     <option value="Sedang" {{ $rule->harga_fuzzy == 'Sedang' ? 'selected' : '' }}>Sedang</option>
@@ -30,7 +30,7 @@
                             <div class="col-auto">
                                 <label class="form-label">and Rating</label>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-2">
                                 <select class="form-select" name="rating_fuzzy">
                                     <option value="Rendah" {{ $rule->rating_fuzzy == 'Rendah' ? 'selected' : '' }}>Rendah</option>
                                     <option value="Sedang" {{ $rule->rating_fuzzy == 'Sedang' ? 'selected' : '' }}>Sedang</option>
@@ -38,9 +38,20 @@
                                 </select>
                             </div>
                             <div class="col-auto">
+                                <label class="form-label">and Rasa</label>
+                            </div>
+                            <div class="col-md-2">
+                                <select class="form-select" name="rasa_fuzzy">
+                                    <option value="Asam" {{ $rule->rasa_fuzzy == 'Asam' ? 'selected' : '' }}>Asam</option>
+                                    <option value="Manis" {{ $rule->rasa_fuzzy == 'Manis' ? 'selected' : '' }}>Manis</option>
+                                    <option value="Pedas" {{ $rule->rasa_fuzzy == 'Pedas' ? 'selected' : '' }}>Pedas</option>
+                                    <option value="Asin" {{ $rule->rasa_fuzzy == 'Asin' ? 'selected' : '' }}>Asin</option>
+                                </select>
+                            </div>
+                            <div class="col-auto">
                                 <label class="form-label">maka</label>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-2">
                                 <select class="form-select" name="menu_id">
                                     @foreach($menus as $menu)
                                         <option value="{{ $menu->id }}" {{ $rule->menu_id == $menu->id ? 'selected' : '' }}>{{ $menu->nama }}</option>

@@ -56,17 +56,18 @@
                     <label for="rasa" class="form-label">Input Rasa</label>
                     <input type="number" step="any" min="0" max="100" name="rasa" id="rasa" class="form-control" required>
                 </div>
+                            <p class="text-muted mt-3" style="font-size: 1rem; line-height: 1.5;">
+                <span class="fw-bold">Keterangan Rasa:</span><br>
+                0 - 40 = Asam<br>
+                20 - 60 = Manis<br>
+                40 - 80 = Pedas<br>
+                60 - 100 = Asin
+            </p>
                 <button type="submit" class="btn btn-success">
                     <i class="fas fa-play-circle me-1"></i> Eksekusi Rule
                 </button>
             </form>
-            <p class="text-muted mt-3" style="font-size: 1rem; line-height: 1.5;">
-                <span class="fw-bold">Keterangan Rasa:</span><br>
-                0 - 30 = Asam<br>
-                20 - 40 = Manis<br>
-                50 - 70 = Pedas<br>
-                75 - 100 = Asin
-            </p>
+
 
             @if(isset($inferenceResults) && count($inferenceResults) > 0)
                 <hr>
@@ -75,6 +76,7 @@
                     <div class="mb-2">
                         IF Harga <strong>{{ $result['rule']->harga_fuzzy }}</strong> ({{ number_format($result['miu_harga'], 3) }})
                         And Rating <strong>{{ $result['rule']->rating_fuzzy }}</strong> ({{ number_format($result['miu_rating'], 3) }})
+                        And Rasa <strong>{{ $result['rule']->rasa_fuzzy }}</strong> ({{ number_format($result['miu_rasa'], 3) }})
                         Then Menu <strong>{{ $result['menu']->nama }}</strong> ({{ number_format($result['alpha'], 3) }})
                     </div>
                 @endforeach
