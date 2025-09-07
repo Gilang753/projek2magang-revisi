@@ -52,10 +52,9 @@
                                 <label class="form-label">maka</label>
                             </div>
                             <div class="col-md-2">
-                                <select class="form-select" name="menu_id">
-                                    @foreach($menus as $menu)
-                                        <option value="{{ $menu->id }}" {{ $rule->menu_id == $menu->id ? 'selected' : '' }}>{{ $menu->nama }}</option>
-                                    @endforeach
+                                <select class="form-select" name="rekomendasi">
+                                    <option value="Rekomendasi" {{ $rule->rekomendasi == 'Rekomendasi' ? 'selected' : '' }}>Rekomendasi</option>
+                                    <option value="Tidak Rekomendasi" {{ $rule->rekomendasi == 'Tidak Rekomendasi' ? 'selected' : '' }}>Tidak Rekomendasi</option>
                                 </select>
                             </div>
                             <div class="col-md-12 text-end mt-3">

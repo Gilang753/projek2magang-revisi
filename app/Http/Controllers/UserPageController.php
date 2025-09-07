@@ -7,8 +7,8 @@ use App\Models\FuzzyBoundary;
 use App\Models\FuzzyInput;
 use App\Models\RatingBoundary;
 use App\Models\RatingHistory;
-use App\Models\RasaBoundary; // Tambahkan ini
-use App\Models\RasaHistory;  // Tambahkan ini
+use App\Models\RasaBoundary;
+use App\Models\RasaHistory;
 use App\Models\Rule;
 use App\Models\Menu;
 
@@ -25,7 +25,7 @@ class UserPageController extends Controller
         $request->validate([
             'harga' => 'required|numeric|min:0',
             'rating' => 'required|numeric|min:0|max:100',
-            'rasa' => 'required|numeric|min:0|max:100', // Tambahkan validasi untuk rasa
+            'rasa' => 'required|numeric|min:0|max:100',
         ]);
 
         // Proses fuzzy harga
@@ -105,7 +105,7 @@ class UserPageController extends Controller
             'miu_tinggi' => $miu_tinggi,
         ]);
 
-        // PROSES FUZZY RASA - TAMBAHAN BARU
+        // Proses fuzzy rasa
         $rasa = (float) $request->input('rasa');
         $rasaBoundaries = RasaBoundary::first();
         if (!$rasaBoundaries) {
@@ -162,7 +162,7 @@ class UserPageController extends Controller
         ]);
 
         // Eksekusi rule
-        $rules = Rule::with('menu')->get();
+        $rules = Rule::all(); // Hapus with('menu') karena tidak diperlukan lagi
         $inferenceResults = [];
         
         foreach ($rules as $rule) {
@@ -180,7 +180,6 @@ class UserPageController extends Controller
                 default: $miuRating = 0;
             }
             
-            // TAMBAHAN: Logika untuk rasa
             switch ($rule->rasa_fuzzy) {
                 case 'Asam': $miuRasa = $rasaHistory->miu_asam; break;
                 case 'Manis': $miuRasa = $rasaHistory->miu_manis; break;
@@ -194,9 +193,9 @@ class UserPageController extends Controller
                 'rule' => $rule,
                 'miu_harga' => $miuHarga,
                 'miu_rating' => $miuRating,
-                'miu_rasa' => $miuRasa, // Tambahkan ini
+                'miu_rasa' => $miuRasa,
                 'alpha' => $alpha,
-                'menu' => $rule->menu
+                'rekomendasi' => $rule->rekomendasi // Ubah dari 'menu' menjadi 'rekomendasi'
             ];
         }
         
@@ -207,7 +206,7 @@ class UserPageController extends Controller
         $menus = Menu::all();
         $hargaInput = $harga;
         $ratingInput = $rating;
-        $rasaInput = $rasa; // Tambahkan ini
+        $rasaInput = $rasa;
         
         return view('user.index', compact('inferenceResults', 'menus', 'hargaInput', 'ratingInput', 'rasaInput'));
     }

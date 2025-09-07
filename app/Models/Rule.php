@@ -13,11 +13,6 @@ class Rule extends Model
         'harga_fuzzy',
         'rating_fuzzy',
         'rasa_fuzzy',
-        'menu_id',
+        'rekomendasi', 
     ];
-
-    public function menu()
-    {
-        return $this->belongsTo(Menu::class);
-    }
 }

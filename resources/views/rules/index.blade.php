@@ -52,10 +52,9 @@
                                 <label class="form-label">Then</label>
                             </div>
                             <div class="col-md-2">
-                                <select class="form-select" name="menu_id">
-                                    @foreach($menus as $menu)
-                                        <option value="{{ $menu->id }}">{{ $menu->nama }}</option>
-                                    @endforeach
+                                <select class="form-select" name="rekomendasi">
+                                    <option value="Rekomendasi">Rekomendasi</option>
+                                    <option value="Tidak Rekomendasi">Tidak Rekomendasi</option>
                                 </select>
                             </div>
                             <div class="col-md-12 text-end mt-3">
@@ -88,7 +87,7 @@
                                     <tr>
                                         <td class="text-center">{{ $loop->iteration }}</td>
                                         <td>
-                                            IF Harga {{ $rule->harga_fuzzy }} And Rating {{ $rule->rating_fuzzy }} And Rasa {{ $rule->rasa_fuzzy }}, Then Menu {{ $rule->menu?->nama ?? 'Menu Tidak Ditemukan' }}
+                                            IF Harga {{ $rule->harga_fuzzy }} And Rating {{ $rule->rating_fuzzy }} And Rasa {{ $rule->rasa_fuzzy }}, Then {{ $rule->rekomendasi }}
                                         </td>
                                         <td class="text-center">
                                             <a href="{{ route('rules.edit', $rule->id) }}" class="btn btn-warning btn-sm">Edit</a>
@@ -143,7 +142,7 @@
                             ({{ number_format($result['miu_rating'], 3) }}) 
                             And Rasa <strong>{{ $result['rule']->rasa_fuzzy }}</strong>
                             ({{ number_format($result['miu_rasa'], 3) }})
-                            Then Menu <strong>{{ $result['menu']->nama }}</strong> 
+                            Then <strong>{{ $result['rekomendasi'] }}</strong> 
                             ({{ number_format($result['alpha'], 3) }})
                         </div>
                     @endforeach

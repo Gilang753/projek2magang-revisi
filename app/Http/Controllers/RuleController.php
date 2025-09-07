@@ -3,7 +3,6 @@
 namespace App\Http\Controllers;
 
 use App\Models\Rule;
-use App\Models\Menu;
 use App\Models\FuzzyInput;
 use App\Models\RatingHistory;
 use App\Models\RasaHistory;
@@ -13,10 +12,9 @@ class RuleController extends Controller
 {
     public function index()
     {
-        $menus = Menu::all(); 
-        $rules = Rule::with('menu')->get();
+        $rules = Rule::all();
         
-        return view('rules.index', compact('menus', 'rules'));
+        return view('rules.index', compact('rules'));
     }
 
     public function store(Request $request)
@@ -25,14 +23,14 @@ class RuleController extends Controller
             'harga_fuzzy' => 'required',
             'rating_fuzzy' => 'required',
             'rasa_fuzzy' => 'required',
-            'menu_id' => 'required|exists:tb_menu,id',
+            'rekomendasi' => 'required|in:Rekomendasi,Tidak Rekomendasi',
         ]);
         
         // Cek apakah aturan duplikat sudah ada
         $existingRule = Rule::where('harga_fuzzy', $request->harga_fuzzy)
                             ->where('rating_fuzzy', $request->rating_fuzzy)
                             ->where('rasa_fuzzy', $request->rasa_fuzzy)
-                            ->where('menu_id', $request->menu_id)
+                            ->where('rekomendasi', $request->rekomendasi)
                             ->first();
 
         if ($existingRule) {
@@ -43,7 +41,7 @@ class RuleController extends Controller
             'harga_fuzzy' => $request->harga_fuzzy,
             'rating_fuzzy' => $request->rating_fuzzy,
             'rasa_fuzzy' => $request->rasa_fuzzy,
-            'menu_id' => $request->menu_id,
+            'rekomendasi' => $request->rekomendasi,
         ]);
 
         return redirect()->route('rules.index')->with('sukses', 'Aturan baru berhasil ditambahkan!');
@@ -51,8 +49,7 @@ class RuleController extends Controller
     
     public function edit(Rule $rule)
     {
-        $menus = Menu::all();
-        return view('rules.edit', compact('rule', 'menus'));
+        return view('rules.edit', compact('rule'));
     }
 
     public function update(Request $request, Rule $rule)
@@ -61,14 +58,14 @@ class RuleController extends Controller
             'harga_fuzzy' => 'required',
             'rating_fuzzy' => 'required',
             'rasa_fuzzy' => 'required',
-            'menu_id' => 'required|exists:tb_menu,id',
+            'rekomendasi' => 'required|in:Rekomendasi,Tidak Rekomendasi',
         ]);
         
         // Periksa duplikasi
         $existingRule = Rule::where('harga_fuzzy', $request->harga_fuzzy)
                         ->where('rating_fuzzy', $request->rating_fuzzy)
                         ->where('rasa_fuzzy', $request->rasa_fuzzy)
-                        ->where('menu_id', $request->menu_id)
+                        ->where('rekomendasi', $request->rekomendasi)
                         ->where('id', '!=', $rule->id)
                         ->first();
 
@@ -80,7 +77,7 @@ class RuleController extends Controller
             'harga_fuzzy' => $request->harga_fuzzy,
             'rating_fuzzy' => $request->rating_fuzzy,
             'rasa_fuzzy' => $request->rasa_fuzzy,
-            'menu_id' => $request->menu_id,
+            'rekomendasi' => $request->rekomendasi,
         ]);
 
         return redirect()->route('rules.index')->with('sukses', 'Aturan berhasil diperbarui!');
@@ -103,7 +100,7 @@ class RuleController extends Controller
             return redirect()->route('rules.index')->with('error', 'Data derajat keanggotaan belum tersedia. Silakan hitung terlebih dahulu di menu Fuzzy.');
         }
         
-        $rules = Rule::with('menu')->get();
+        $rules = Rule::all();
         $inferenceResults = [];
         
         foreach ($rules as $rule) {
@@ -141,7 +138,7 @@ class RuleController extends Controller
                 'miu_rating' => $miuRating,
                 'miu_rasa' => $miuRasa,
                 'alpha' => $alpha,
-                'menu' => $rule->menu
+                'rekomendasi' => $rule->rekomendasi
             ];
         }
         
@@ -150,9 +147,8 @@ class RuleController extends Controller
             return $b['alpha'] <=> $a['alpha'];
         });
         
-        $menus = Menu::all();
-        $rules = Rule::with('menu')->get();
+        $rules = Rule::all();
         
-        return view('rules.index', compact('menus', 'rules', 'inferenceResults', 'lastHarga', 'lastRating', 'lastRasa'));
+        return view('rules.index', compact('rules', 'inferenceResults', 'lastHarga', 'lastRating', 'lastRasa'));
     }
 }
