@@ -126,6 +126,17 @@ class RuleController extends Controller
                 }
                 // Nilai alpha adalah minimum dari ketiga derajat keanggotaan
                 $alpha = min($miuHarga, $miuRating, $miuRasa);
+
+                // Simpan ke database
+                \App\Models\RuleExecution::create([
+                    'menu_id' => $menu->id,
+                    'rule_id' => $rule->id,
+                    'miu_harga' => $miuHarga,
+                    'miu_rating' => $miuRating,
+                    'miu_rasa' => $miuRasa,
+                    'alpha_predikat' => $alpha,
+                ]);
+
                 $inferenceResults[] = [
                     'menu' => $menu,
                     'rule' => $rule,

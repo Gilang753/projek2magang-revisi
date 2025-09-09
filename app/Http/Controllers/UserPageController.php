@@ -11,6 +11,7 @@ use App\Models\RasaBoundary;
 use App\Models\RasaHistory;
 use App\Models\Rule;
 use App\Models\Menu;
+use App\Models\InferenceResult; // Tambahkan use InferenceResult
 
 class UserPageController extends Controller
 {
@@ -197,6 +198,16 @@ class UserPageController extends Controller
                 'alpha' => $alpha,
                 'rekomendasi' => $rule->rekomendasi // Ubah dari 'menu' menjadi 'rekomendasi'
             ];
+            // Simpan ke database
+            InferenceResult::create([
+                'rule_id' => $rule->id,
+                'menu_id' => null, // atau isi dengan id menu jika ada relasi
+                'miu_harga' => $miuHarga,
+                'miu_rating' => $miuRating,
+                'miu_rasa' => $miuRasa,
+                'alpha' => $alpha,
+                'rekomendasi' => $rule->rekomendasi
+            ]);
         }
         
         usort($inferenceResults, function($a, $b) {
