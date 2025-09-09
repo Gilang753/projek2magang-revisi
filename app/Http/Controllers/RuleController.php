@@ -100,8 +100,8 @@ class RuleController extends Controller
             return redirect()->route('rules.index')->with('error', 'Data menu belum tersedia. Silakan input menu terlebih dahulu.');
         }
 
-        foreach ($menus as $menu) {
-            foreach ($rules as $rule) {
+        foreach ($rules as $rule) {
+            foreach ($menus as $menu) {
                 // Nilai derajat keanggotaan untuk harga
                 switch ($rule->harga_fuzzy) {
                     case 'Murah': $miuHarga = $menu->miu_harga_murah; break;
@@ -149,10 +149,7 @@ class RuleController extends Controller
             }
         }
 
-        // Urutkan hasil berdasarkan alpha tertinggi
-        usort($inferenceResults, function($a, $b) {
-            return $b['alpha'] <=> $a['alpha'];
-        });
+    // Hasil eksekusi akan mengikuti urutan list rule di database, tidak diurutkan berdasarkan alpha.
 
         return view('rules.index', compact('rules', 'inferenceResults', 'menus'));
     }
