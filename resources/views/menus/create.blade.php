@@ -35,22 +35,66 @@
                 </div>
                 
                 <div class="mb-3">
-                    <label for="cita_rasa" class="form-label">Cita Rasa</label>
-                    <select class="form-select" id="cita_rasa" name="cita_rasa" required>
-                        @foreach($citaRasaOptions as $value => $label)
-                            <option value="{{ $value }}">{{ $label }}</option>
-                        @endforeach
-                    </select>
+                    <label for="nilai_rasa" class="form-label">Nilai Rasa (0-100)</label>
+                    <input type="number" class="form-control" id="nilai_rasa" name="nilai_rasa" min="0" max="100" required oninput="updateRasaBox()">
+                    <div class="form-text">Masukkan nilai antara 0 sampai 100</div>
                 </div>
+                <div class="mb-3">
+                    <label class="form-label">Hasil Rasa</label>
+                    <input type="text" class="form-control" id="hasil_rasa" readonly>
+                </div>
+                <script>
+                function updateRasaBox() {
+                    const nilai = parseFloat(document.getElementById('nilai_rasa').value);
+                    let rasa = '';
+                    if (!isNaN(nilai)) {
+                        if (nilai >= 0 && nilai <= 40) {
+                            rasa = 'Asam';
+                        } else if (nilai > 20 && nilai <= 60) {
+                            rasa = 'Manis';
+                        } else if (nilai > 40 && nilai <= 80) {
+                            rasa = 'Pedas';
+                        } else if (nilai > 60 && nilai <= 100) {
+                            rasa = 'Asin';
+                        } else {
+                            rasa = 'Tidak diketahui';
+                        }
+                    }
+                    document.getElementById('hasil_rasa').value = rasa;
+                }
+                </script>
                 
                 <div class="mb-3">
-                    <label for="rating" class="form-label">Rating</label>
-                    <select class="form-select" id="rating" name="rating" required>
-                        @foreach($ratingOptions as $value => $label)
-                            <option value="{{ $value }}">{{ $label }}</option>
-                        @endforeach
-                    </select>
+                    <label for="nilai_rating" class="form-label">Nilai Rating (0-100)</label>
+                    <input type="number" class="form-control" id="nilai_rating" name="nilai_rating" min="0" max="100" required oninput="updateRatingBox()">
+                    <div class="form-text">Masukkan nilai antara 0 sampai 100</div>
                 </div>
+                <div class="mb-3">
+                    <label class="form-label">Hasil Rating</label>
+                    <input type="text" class="form-control" id="hasil_rating" readonly>
+                </div>
+                <script>
+                function updateRatingBox() {
+                    const nilai = parseFloat(document.getElementById('nilai_rating').value);
+                    let rating = '';
+                    if (!isNaN(nilai)) {
+                        if (nilai >= 0 && nilai < 20) {
+                            rating = '★';
+                        } else if (nilai >= 20 && nilai < 40) {
+                            rating = '★★';
+                        } else if (nilai >= 40 && nilai < 60) {
+                            rating = '★★★';
+                        } else if (nilai >= 60 && nilai < 80) {
+                            rating = '★★★★';
+                        } else if (nilai >= 80 && nilai <= 100) {
+                            rating = '★★★★★';
+                        } else {
+                            rating = 'Tidak diketahui';
+                        }
+                    }
+                    document.getElementById('hasil_rating').value = rating;
+                }
+                </script>
                 
                 <div class="mb-3">
                     <label for="gambar" class="form-label">Gambar Menu</label>

@@ -126,16 +126,9 @@
                     <h5 class="mb-0">Hasil Eksekusi Rule</h5>
                 </div>
                 <div class="card-body">
-                    <div class="mb-2">
-                        <small class="text-muted">
-                            Input: Harga Rp. {{ number_format($lastHarga->harga, 0, ',', '.') }}, 
-                            Rating {{ $lastRating->rating }},
-                            Rasa {{ $lastRasa->rasa }}
-                        </small>
-                    </div>
-                    
                     @foreach ($inferenceResults as $index => $result)
                         <div class="mb-2 p-2 border-bottom">
+                            <strong>Menu:</strong> {{ $result['menu']->nama ?? '-' }}<br>
                             IF Harga <strong>{{ $result['rule']->harga_fuzzy }}</strong> 
                             ({{ number_format($result['miu_harga'], 3) }}) 
                             And Rating <strong>{{ $result['rule']->rating_fuzzy }}</strong> 

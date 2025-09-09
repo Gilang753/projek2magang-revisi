@@ -91,64 +91,58 @@ class RuleController extends Controller
 
     public function execute()
     {
-        // Ambil data derajat keanggotaan terbaru
-        $lastHarga = FuzzyInput::latest()->first();
-        $lastRating = RatingHistory::latest()->first();
-        $lastRasa = RasaHistory::latest()->first();
-        
-        if (!$lastHarga || !$lastRating || !$lastRasa) {
-            return redirect()->route('rules.index')->with('error', 'Data derajat keanggotaan belum tersedia. Silakan hitung terlebih dahulu di menu Fuzzy.');
-        }
-        
+        // Ambil semua menu
+        $menus = \App\Models\Menu::all();
         $rules = Rule::all();
         $inferenceResults = [];
-        
-        foreach ($rules as $rule) {
-            // Nilai derajat keanggotaan untuk harga
-            switch ($rule->harga_fuzzy) {
-                case 'Murah': $miuHarga = $lastHarga->miu_murah; break;
-                case 'Sedang': $miuHarga = $lastHarga->miu_sedang; break;
-                case 'Mahal': $miuHarga = $lastHarga->miu_mahal; break;
-                default: $miuHarga = 0;
-            }
-            
-            // Nilai derajat keanggotaan untuk rating
-            switch ($rule->rating_fuzzy) {
-                case 'Rendah': $miuRating = $lastRating->miu_rendah; break;
-                case 'Sedang': $miuRating = $lastRating->miu_sedang; break;
-                case 'Tinggi': $miuRating = $lastRating->miu_tinggi; break;
-                default: $miuRating = 0;
-            }
-            
-            // Nilai derajat keanggotaan untuk rasa
-            switch ($rule->rasa_fuzzy) {
-                case 'Asam': $miuRasa = $lastRasa->miu_asam; break;
-                case 'Manis': $miuRasa = $lastRasa->miu_manis; break;
-                case 'Pedas': $miuRasa = $lastRasa->miu_pedas; break;
-                case 'Asin': $miuRasa = $lastRasa->miu_asin; break;
-                default: $miuRasa = 0;
-            }
-            
-            // Nilai alpha adalah minimum dari ketiga derajat keanggotaan
-            $alpha = min($miuHarga, $miuRating, $miuRasa);
-            
-            $inferenceResults[] = [
-                'rule' => $rule,
-                'miu_harga' => $miuHarga,
-                'miu_rating' => $miuRating,
-                'miu_rasa' => $miuRasa,
-                'alpha' => $alpha,
-                'rekomendasi' => $rule->rekomendasi
-            ];
+
+        if ($menus->isEmpty()) {
+            return redirect()->route('rules.index')->with('error', 'Data menu belum tersedia. Silakan input menu terlebih dahulu.');
         }
-        
+
+        foreach ($menus as $menu) {
+            foreach ($rules as $rule) {
+                // Nilai derajat keanggotaan untuk harga
+                switch ($rule->harga_fuzzy) {
+                    case 'Murah': $miuHarga = $menu->miu_harga_murah; break;
+                    case 'Sedang': $miuHarga = $menu->miu_harga_sedang; break;
+                    case 'Mahal': $miuHarga = $menu->miu_harga_mahal; break;
+                    default: $miuHarga = 0;
+                }
+                // Nilai derajat keanggotaan untuk rating
+                switch ($rule->rating_fuzzy) {
+                    case 'Rendah': $miuRating = $menu->miu_rating_rendah; break;
+                    case 'Sedang': $miuRating = $menu->miu_rating_sedang; break;
+                    case 'Tinggi': $miuRating = $menu->miu_rating_tinggi; break;
+                    default: $miuRating = 0;
+                }
+                // Nilai derajat keanggotaan untuk rasa
+                switch ($rule->rasa_fuzzy) {
+                    case 'Asam': $miuRasa = $menu->miu_rasa_asam; break;
+                    case 'Manis': $miuRasa = $menu->miu_rasa_manis; break;
+                    case 'Pedas': $miuRasa = $menu->miu_rasa_pedas; break;
+                    case 'Asin': $miuRasa = $menu->miu_rasa_asin; break;
+                    default: $miuRasa = 0;
+                }
+                // Nilai alpha adalah minimum dari ketiga derajat keanggotaan
+                $alpha = min($miuHarga, $miuRating, $miuRasa);
+                $inferenceResults[] = [
+                    'menu' => $menu,
+                    'rule' => $rule,
+                    'miu_harga' => $miuHarga,
+                    'miu_rating' => $miuRating,
+                    'miu_rasa' => $miuRasa,
+                    'alpha' => $alpha,
+                    'rekomendasi' => $rule->rekomendasi
+                ];
+            }
+        }
+
         // Urutkan hasil berdasarkan alpha tertinggi
         usort($inferenceResults, function($a, $b) {
             return $b['alpha'] <=> $a['alpha'];
         });
-        
-        $rules = Rule::all();
-        
-        return view('rules.index', compact('rules', 'inferenceResults', 'lastHarga', 'lastRating', 'lastRasa'));
+
+        return view('rules.index', compact('rules', 'inferenceResults', 'menus'));
     }
 }

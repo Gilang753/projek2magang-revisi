@@ -6,26 +6,30 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
     public function up()
     {
-        Schema::table('rules', function (Blueprint $table) {
-            // Hapus kolom menu_id
-            $table->dropForeign(['menu_id']);
-            $table->dropColumn('menu_id');
-            
-            // Tambah kolom rekomendasi
-            $table->enum('rekomendasi', ['Rekomendasi', 'Tidak Rekomendasi'])->after('rasa_fuzzy');
+        Schema::create('rules', function (Blueprint $table) {
+            $table->id();
+            $table->string('harga_fuzzy');
+            $table->string('rating_fuzzy');
+            $table->string('rasa_fuzzy');
+            $table->enum('rekomendasi', ['Rekomendasi', 'Tidak Rekomendasi']);
+            $table->timestamps();
         });
     }
 
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
     public function down()
     {
-        Schema::table('rules', function (Blueprint $table) {
-            // Kembalikan kolom menu_id
-            $table->foreignId('menu_id')->constrained()->onDelete('cascade');
-            
-            // Hapus kolom rekomendasi
-            $table->dropColumn('rekomendasi');
-        });
+        Schema::dropIfExists('rules');
     }
 };
