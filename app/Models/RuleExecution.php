@@ -16,6 +16,7 @@ class RuleExecution extends Model
         'miu_rating',
         'miu_rasa',
         'alpha_predikat',
+        'z_crisp',
     ];
 
     public function menu()

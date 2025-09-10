@@ -6,6 +6,7 @@ use App\Models\Rule;
 use App\Models\FuzzyInput;
 use App\Models\RatingHistory;
 use App\Models\RasaHistory;
+use App\Models\RuleExecution;
 use Illuminate\Http\Request;
 
 class RuleController extends Controller
@@ -91,10 +92,24 @@ class RuleController extends Controller
 
     public function execute()
     {
+        // Hapus semua data lama di tabel rule_executions agar hasil selalu terbaru
+        RuleExecution::truncate();
         // Ambil semua menu
         $menus = \App\Models\Menu::all();
         $rules = Rule::all();
         $inferenceResults = [];
+
+        // Ambil batas fuzzy output dari rekomendasi_boundaries
+        $boundaries = \App\Models\RekomendasiBoundary::first();
+        if (!$boundaries) {
+            return redirect()->route('rules.index')->with('error', 'Batas fuzzy rekomendasi belum tersedia. Silakan input batas terlebih dahulu.');
+        }
+
+        // Ambil nilai batas
+        $T1 = $boundaries->batas_tidak_puncak;
+        $T2 = $boundaries->batas_tidak_akhir;
+        $R1 = $boundaries->batas_rekomendasi_awal;
+        $R2 = $boundaries->batas_rekomendasi_puncak;
 
         if ($menus->isEmpty()) {
             return redirect()->route('rules.index')->with('error', 'Data menu belum tersedia. Silakan input menu terlebih dahulu.');
@@ -127,6 +142,15 @@ class RuleController extends Controller
                 // Nilai alpha adalah minimum dari ketiga derajat keanggotaan
                 $alpha = min($miuHarga, $miuRating, $miuRasa);
 
+                // Hitung z_crisp sesuai rumus Tsukamoto
+                if ($rule->rekomendasi === 'Rekomendasi') {
+                    // Output monoton naik
+                    $z_crisp = $alpha * ($R2 - $R1) + $R1;
+                } else {
+                    // Output monoton turun
+                    $z_crisp = $T2 - $alpha * ($T2 - $T1);
+                }
+
                 // Simpan ke database
                 \App\Models\RuleExecution::create([
                     'menu_id' => $menu->id,
@@ -135,6 +159,7 @@ class RuleController extends Controller
                     'miu_rating' => $miuRating,
                     'miu_rasa' => $miuRasa,
                     'alpha_predikat' => $alpha,
+                    'z_crisp' => $z_crisp,
                 ]);
 
                 $inferenceResults[] = [
@@ -144,12 +169,13 @@ class RuleController extends Controller
                     'miu_rating' => $miuRating,
                     'miu_rasa' => $miuRasa,
                     'alpha' => $alpha,
+                    'z_crisp' => $z_crisp,
                     'rekomendasi' => $rule->rekomendasi
                 ];
             }
         }
 
-    // Hasil eksekusi akan mengikuti urutan list rule di database, tidak diurutkan berdasarkan alpha.
+        // Hasil eksekusi akan mengikuti urutan list rule di database, tidak diurutkan berdasarkan alpha.
 
         return view('rules.index', compact('rules', 'inferenceResults', 'menus'));
     }
