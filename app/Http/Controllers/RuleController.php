@@ -115,8 +115,12 @@ class RuleController extends Controller
             return redirect()->route('rules.index')->with('error', 'Data menu belum tersedia. Silakan input menu terlebih dahulu.');
         }
 
-        foreach ($rules as $rule) {
-            foreach ($menus as $menu) {
+        // Simpan semua rule execution dan hitung defuzzifikasi per menu
+        $ruleExecutionsByMenu = [];
+        foreach ($menus as $menu) {
+            $sumAlphaZ = 0;
+            $sumAlpha = 0;
+            foreach ($rules as $rule) {
                 // Nilai derajat keanggotaan untuk harga
                 switch ($rule->harga_fuzzy) {
                     case 'Murah': $miuHarga = $menu->miu_harga_murah; break;
@@ -151,8 +155,10 @@ class RuleController extends Controller
                     $z_crisp = $T2 - $alpha * ($T2 - $T1);
                 }
 
-                // Simpan ke database
-                \App\Models\RuleExecution::create([
+                $sumAlphaZ += $alpha * $z_crisp;
+                $sumAlpha += $alpha;
+
+                $ruleExecutionsByMenu[$menu->id][] = [
                     'menu_id' => $menu->id,
                     'rule_id' => $rule->id,
                     'miu_harga' => $miuHarga,
@@ -160,18 +166,22 @@ class RuleController extends Controller
                     'miu_rasa' => $miuRasa,
                     'alpha_predikat' => $alpha,
                     'z_crisp' => $z_crisp,
-                ]);
-
-                $inferenceResults[] = [
-                    'menu' => $menu,
-                    'rule' => $rule,
-                    'miu_harga' => $miuHarga,
-                    'miu_rating' => $miuRating,
-                    'miu_rasa' => $miuRasa,
-                    'alpha' => $alpha,
-                    'z_crisp' => $z_crisp,
-                    'rekomendasi' => $rule->rekomendasi
                 ];
+            }
+            // Hitung defuzzifikasi (z_admin) untuk menu ini
+            $z_admin = $sumAlpha > 0 ? $sumAlphaZ / $sumAlpha : 0;
+            // Simpan ke database
+            if (isset($ruleExecutionsByMenu[$menu->id])) {
+                foreach ($ruleExecutionsByMenu[$menu->id] as $exec) {
+                    $exec['z_admin'] = $z_admin;
+                    \App\Models\RuleExecution::create($exec);
+                    $inferenceResults[] = array_merge($exec, [
+                        'menu' => $menu,
+                        'rule' => $rules->where('id', $exec['rule_id'])->first(),
+                        'rekomendasi' => $rules->where('id', $exec['rule_id'])->first()->rekomendasi ?? null,
+                        // pastikan key alpha_predikat tersedia, hapus key alpha
+                    ]);
+                }
             }
         }
 

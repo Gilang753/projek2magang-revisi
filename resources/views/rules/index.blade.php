@@ -162,7 +162,7 @@
                                             <td>{{ number_format($item['miu_harga'], 3) }}</td>
                                             <td>{{ number_format($item['miu_rating'], 3) }}</td>
                                             <td>{{ number_format($item['miu_rasa'], 3) }}</td>
-                                            <td>{{ number_format($item['alpha'], 3) }}</td>
+                                            <td>{{ number_format($item['alpha_predikat'], 3) }}</td>
                                             <td>{{ number_format($item['z_crisp'], 3) }}</td>
                                         </tr>
                                     @endforeach

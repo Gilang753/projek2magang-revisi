@@ -17,6 +17,7 @@ class RuleExecution extends Model
         'miu_rasa',
         'alpha_predikat',
         'z_crisp',
+        'z_admin',
     ];
 
     public function menu()
