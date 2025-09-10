@@ -121,25 +121,56 @@
 
             {{-- Hasil Eksekusi --}}
             @if(isset($inferenceResults) && count($inferenceResults) > 0)
-            <div class="card shadow-sm mt-4">
-                <div class="card-header bg-info text-white">
-                    <h5 class="mb-0">Hasil Eksekusi Rule</h5>
-                </div>
-                <div class="card-body">
-                    @foreach ($inferenceResults as $index => $result)
-                        <div class="mb-2 p-2 border-bottom">
-                            <strong>Menu:</strong> {{ $result['menu']->nama ?? '-' }}<br>
-                            IF Harga <strong>{{ $result['rule']->harga_fuzzy }}</strong> 
-                            ({{ number_format($result['miu_harga'], 3) }}) 
-                            And Rating <strong>{{ $result['rule']->rating_fuzzy }}</strong> 
-                            ({{ number_format($result['miu_rating'], 3) }}) 
-                            And Rasa <strong>{{ $result['rule']->rasa_fuzzy }}</strong>
-                            ({{ number_format($result['miu_rasa'], 3) }})
-                            Then <strong>{{ $result['rekomendasi'] }}</strong> 
-                            ({{ number_format($result['alpha'], 3) }})
+            <div class="mt-4">
+                <h5 class="mb-3">Hasil Eksekusi Rule</h5>
+                @php
+                    // Kelompokkan hasil per rule
+                    $groupedResults = [];
+                    foreach ($inferenceResults as $result) {
+                        $ruleId = $result['rule']->id;
+                        if (!isset($groupedResults[$ruleId])) {
+                            $groupedResults[$ruleId] = [
+                                'rule' => $result['rule'],
+                                'rekomendasi' => $result['rekomendasi'],
+                                'items' => []
+                            ];
+                        }
+                        $groupedResults[$ruleId]['items'][] = $result;
+                    }
+                @endphp
+                @foreach ($groupedResults as $ruleGroup)
+                    <div class="card mb-4">
+                        <div class="card-header bg-secondary text-white">
+                            <strong>Rule:</strong> IF Harga <strong>{{ $ruleGroup['rule']->harga_fuzzy }}</strong>, Rating <strong>{{ $ruleGroup['rule']->rating_fuzzy }}</strong>, Rasa <strong>{{ $ruleGroup['rule']->rasa_fuzzy }}</strong> THEN <strong>{{ $ruleGroup['rekomendasi'] }}</strong>
                         </div>
-                    @endforeach
-                </div>
+                        <div class="card-body">
+                            <table class="table table-bordered mb-0">
+                                <thead>
+                                    <tr class="text-center">
+                                        <th>Menu</th>
+                                        <th>Miu Harga</th>
+                                        <th>Miu Rating</th>
+                                        <th>Miu Rasa</th>
+                                        <th>Alpha</th>
+                                        <th>Z_Crisp</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($ruleGroup['items'] as $item)
+                                        <tr class="text-center">
+                                            <td>{{ $item['menu']->nama ?? '-' }}</td>
+                                            <td>{{ number_format($item['miu_harga'], 3) }}</td>
+                                            <td>{{ number_format($item['miu_rating'], 3) }}</td>
+                                            <td>{{ number_format($item['miu_rasa'], 3) }}</td>
+                                            <td>{{ number_format($item['alpha'], 3) }}</td>
+                                            <td>{{ number_format($item['z_crisp'], 3) }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                @endforeach
             </div>
             @endif
         </div>
