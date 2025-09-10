@@ -32,6 +32,15 @@
                         <div class="text-warning">
                             {{ str_repeat('★', $menu->rating) }}{{ str_repeat('☆', 5 - $menu->rating) }}
                         </div>
+                        <div class="mt-2">
+                            <span class="badge bg-info text-dark">Defuzzifikasi: 
+                                {{
+                                    optional(\App\Models\RuleExecution::where('menu_id', $menu->id)->first())->z_admin !== null
+                                        ? \App\Models\RuleExecution::where('menu_id', $menu->id)->first()->z_admin
+                                        : '-' 
+                                }}
+                            </span>
+                        </div>
                     </div>
                 </div>
             </a>
