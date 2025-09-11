@@ -1,3 +1,24 @@
+    @if(isset($recommendedMenus) && count($recommendedMenus) > 0)
+    <div class="alert alert-success mt-3">
+        <h4 class="alert-heading">Rekomendasi Menu Terdekat (Max 10)</h4>
+        <div class="row">
+            @foreach($recommendedMenus as $rec)
+            <div class="col-md-6 mb-2">
+                <div class="d-flex align-items-center">
+                    @if($rec['menu']->gambar)
+                        <img src="{{ asset('storage/'.$rec['menu']->gambar) }}" style="height: 60px; width: 60px; object-fit: cover; border-radius: 8px; margin-right: 12px;">
+                    @endif
+                    <div>
+                        <strong>{{ $rec['menu']->nama }}</strong><br>
+                        <span class="text-muted">Rp {{ number_format($rec['menu']->harga_seporsi, 0, ',', '.') }}</span><br>
+                        <span class="badge bg-info text-dark">z_user: {{ $z_user }}, z_admin: {{ $rec['z_admin'] }}</span>
+                    </div>
+                </div>
+            </div>
+            @endforeach
+        </div>
+    </div>
+    @endif
 @extends('layouts.app')
 
 @section('title', 'User')

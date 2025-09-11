@@ -166,21 +166,25 @@ class UserPageController extends Controller
         $rules = Rule::all(); // Hapus with('menu') karena tidak diperlukan lagi
         $inferenceResults = [];
         
-        foreach ($rules as $rule) {
+    // Hapus semua data inference_results agar selalu fresh untuk setiap eksekusi user
+    \App\Models\InferenceResult::truncate();
+
+    $alphaArr = [];
+    $zArr = [];
+    $createdInferenceResults = [];
+    foreach ($rules as $rule) {
             switch ($rule->harga_fuzzy) {
                 case 'Murah': $miuHarga = $fuzzyInput->miu_murah; break;
                 case 'Sedang': $miuHarga = $fuzzyInput->miu_sedang; break;
                 case 'Mahal': $miuHarga = $fuzzyInput->miu_mahal; break;
                 default: $miuHarga = 0;
             }
-            
             switch ($rule->rating_fuzzy) {
                 case 'Rendah': $miuRating = $ratingHistory->miu_rendah; break;
                 case 'Sedang': $miuRating = $ratingHistory->miu_sedang; break;
                 case 'Tinggi': $miuRating = $ratingHistory->miu_tinggi; break;
                 default: $miuRating = 0;
             }
-            
             switch ($rule->rasa_fuzzy) {
                 case 'Asam': $miuRasa = $rasaHistory->miu_asam; break;
                 case 'Manis': $miuRasa = $rasaHistory->miu_manis; break;
@@ -188,26 +192,42 @@ class UserPageController extends Controller
                 case 'Asin': $miuRasa = $rasaHistory->miu_asin; break;
                 default: $miuRasa = 0;
             }
-            
             $alpha = min($miuHarga, $miuRating, $miuRasa);
+            $z_crisp = optional(\App\Models\RuleExecution::where('rule_id', $rule->id)->first())->z_crisp;
+            $alphaArr[] = $alpha;
+            $zArr[] = $z_crisp;
             $inferenceResults[] = [
                 'rule' => $rule,
                 'miu_harga' => $miuHarga,
                 'miu_rating' => $miuRating,
                 'miu_rasa' => $miuRasa,
                 'alpha' => $alpha,
-                'rekomendasi' => $rule->rekomendasi // Ubah dari 'menu' menjadi 'rekomendasi'
+                'z_crisp' => $z_crisp,
+                'rekomendasi' => $rule->rekomendasi
             ];
-            // Simpan ke database
-            InferenceResult::create([
+            $created = InferenceResult::create([
                 'rule_id' => $rule->id,
-                'menu_id' => null, // atau isi dengan id menu jika ada relasi
+                'menu_id' => null,
                 'miu_harga' => $miuHarga,
                 'miu_rating' => $miuRating,
                 'miu_rasa' => $miuRasa,
                 'alpha' => $alpha,
-                'rekomendasi' => $rule->rekomendasi
+                'rekomendasi' => $rule->rekomendasi,
             ]);
+            $createdInferenceResults[] = $created;
+        }
+        $sumAlphaZ = 0;
+        $sumAlpha = 0;
+        foreach ($alphaArr as $i => $alpha) {
+            if ($zArr[$i] !== null) {
+                $sumAlphaZ += $alpha * $zArr[$i];
+                $sumAlpha += $alpha;
+            }
+        }
+        $z_user = $sumAlpha > 0 ? $sumAlphaZ / $sumAlpha : 0;
+        foreach ($createdInferenceResults as $created) {
+            $created->z_user = $z_user;
+            $created->save();
         }
         
         usort($inferenceResults, function($a, $b) {
@@ -218,7 +238,28 @@ class UserPageController extends Controller
         $hargaInput = $harga;
         $ratingInput = $rating;
         $rasaInput = $rasa;
-        
-        return view('user.index', compact('inferenceResults', 'menus', 'hargaInput', 'ratingInput', 'rasaInput'));
+
+        // Cari z_user (ambil satu saja dari inference_results)
+        $z_user = InferenceResult::orderByDesc('id')->value('z_user');
+
+        // Cari hingga 10 menu dengan z_admin terdekat ke z_user
+        $menuDiffs = [];
+        foreach ($menus as $menu) {
+            $z_admin = \App\Models\RuleExecution::where('menu_id', $menu->id)->value('z_admin');
+            if ($z_admin !== null && $z_user !== null) {
+                $diff = abs($z_user - $z_admin);
+                $menuDiffs[] = [
+                    'menu' => $menu,
+                    'z_admin' => $z_admin,
+                    'diff' => $diff
+                ];
+            }
+        }
+        usort($menuDiffs, function($a, $b) {
+            return $a['diff'] <=> $b['diff'];
+        });
+        $recommendedMenus = array_slice($menuDiffs, 0, 10);
+
+    return view('user.result', compact('inferenceResults', 'menus', 'hargaInput', 'ratingInput', 'rasaInput', 'recommendedMenus', 'z_user'));
     }
 }
