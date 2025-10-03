@@ -12,7 +12,7 @@ use App\Http\Controllers\RekomendasiFuzzyController;
 
 // Route untuk halaman utama
 Route::get('/', function () {
-    return view('welcome');
+    return view('/admin/login');
 });
 
 // Route authentication

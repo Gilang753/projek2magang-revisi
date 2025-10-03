@@ -81,19 +81,16 @@ class UserPageController extends Controller
         } elseif ($rating > $ratingBoundaries->batas_rendah_puncak && $rating < $ratingBoundaries->batas_rendah_akhir) {
             $miu_rendah = ($ratingBoundaries->batas_rendah_akhir - $rating) / ($ratingBoundaries->batas_rendah_akhir - $ratingBoundaries->batas_rendah_puncak);
         }
-        
         if ($rating >= $ratingBoundaries->batas_sedang_awal && $rating <= $ratingBoundaries->batas_sedang_puncak) {
             $miu_sedang = ($rating - $ratingBoundaries->batas_sedang_awal) / ($ratingBoundaries->batas_sedang_puncak - $ratingBoundaries->batas_sedang_awal);
         } elseif ($rating > $ratingBoundaries->batas_sedang_puncak && $rating < $ratingBoundaries->batas_sedang_akhir) {
             $miu_sedang = ($ratingBoundaries->batas_sedang_akhir - $rating) / ($ratingBoundaries->batas_sedang_akhir - $ratingBoundaries->batas_sedang_puncak);
         }
-        
         if ($rating >= $ratingBoundaries->batas_tinggi_awal && $rating <= $ratingBoundaries->batas_tinggi_puncak) {
             $miu_tinggi = ($rating - $ratingBoundaries->batas_tinggi_awal) / ($ratingBoundaries->batas_tinggi_puncak - $ratingBoundaries->batas_tinggi_awal);
         } elseif ($rating > $ratingBoundaries->batas_tinggi_puncak) {
             $miu_tinggi = 1;
         }
-        
         $ratingHistory = RatingHistory::create([
             'rating' => $rating,
             'p1' => 0,
@@ -113,16 +110,103 @@ class UserPageController extends Controller
             return back()->with('error', 'Batas fuzzy rasa belum diatur.');
         }
         
-        // Hitung miu rasa
+        // Proses fuzzy rasa
+        $rasa = (float) $request->input('rasa');
+        $rasaBoundaries = RasaBoundary::first();
+        if (!$rasaBoundaries) {
+            return back()->with('error', 'Batas fuzzy rasa belum diatur.');
+        }
         $miu_asam = $miu_manis = $miu_pedas = $miu_asin = 0;
-        
-        // Calculate miu_asam (Sour) - Left Shoulder Curve
         if ($rasa <= $rasaBoundaries->batas_asam_puncak) {
             $miu_asam = 1;
         } elseif ($rasa > $rasaBoundaries->batas_asam_puncak && $rasa < $rasaBoundaries->batas_asam_akhir) {
-            $miu_asam = ($rasaBoundaries->batas_asam_akhir - $rasa) / 
-                        ($rasaBoundaries->batas_asam_akhir - $rasaBoundaries->batas_asam_puncak);
+            $miu_asam = ($rasaBoundaries->batas_asam_akhir - $rasa) / ($rasaBoundaries->batas_asam_akhir - $rasaBoundaries->batas_asam_puncak);
         }
+        if ($rasa > $rasaBoundaries->batas_manis_awal && $rasa <= $rasaBoundaries->batas_manis_puncak) {
+            $miu_manis = ($rasa - $rasaBoundaries->batas_manis_awal) / ($rasaBoundaries->batas_manis_puncak - $rasaBoundaries->batas_manis_awal);
+        } elseif ($rasa > $rasaBoundaries->batas_manis_puncak && $rasa < $rasaBoundaries->batas_manis_akhir) {
+            $miu_manis = ($rasaBoundaries->batas_manis_akhir - $rasa) / ($rasaBoundaries->batas_manis_akhir - $rasaBoundaries->batas_manis_puncak);
+        } elseif ($rasa == $rasaBoundaries->batas_manis_puncak) {
+            $miu_manis = 1;
+        }
+        if ($rasa > $rasaBoundaries->batas_pedas_awal && $rasa <= $rasaBoundaries->batas_pedas_puncak) {
+            $miu_pedas = ($rasa - $rasaBoundaries->batas_pedas_awal) / ($rasaBoundaries->batas_pedas_puncak - $rasaBoundaries->batas_pedas_awal);
+        } elseif ($rasa > $rasaBoundaries->batas_pedas_puncak && $rasa < $rasaBoundaries->batas_pedas_akhir) {
+            $miu_pedas = ($rasaBoundaries->batas_pedas_akhir - $rasa) / ($rasaBoundaries->batas_pedas_akhir - $rasaBoundaries->batas_pedas_puncak);
+        } elseif ($rasa == $rasaBoundaries->batas_pedas_puncak) {
+            $miu_pedas = 1;
+        }
+        if ($rasa > $rasaBoundaries->batas_asin_awal && $rasa < $rasaBoundaries->batas_asin_puncak) {
+            $miu_asin = ($rasa - $rasaBoundaries->batas_asin_awal) / ($rasaBoundaries->batas_asin_puncak - $rasaBoundaries->batas_asin_awal);
+        } elseif ($rasa >= $rasaBoundaries->batas_asin_puncak) {
+            $miu_asin = 1;
+        }
+        $rasaHistory = RasaHistory::create([
+            'rasa' => $rasa,
+            'miu_asam' => $miu_asam,
+            'miu_manis' => $miu_manis,
+            'miu_pedas' => $miu_pedas,
+            'miu_asin' => $miu_asin,
+        ]);
+
+        // ...existing code eksekusi rule dan inference...
+
+        // Setelah semua proses fuzzy dan eksekusi rule, lakukan proses rekomendasi
+        $maxHarga = $harga * 1.2;
+        $minHarga = $harga * 0.8;
+        $menus = Menu::whereBetween('harga_seporsi', [$minHarga, $maxHarga])->get();
+        $hargaInput = $harga;
+        $ratingInput = $rating;
+        $rasaInput = $rasa;
+        $z_user = InferenceResult::orderByDesc('id')->value('z_user');
+        $recommendedMenus = [];
+        // Proses rekomendasi hanya satu blok di akhir
+        // Tentukan preferensi rasa user
+        $preferensiRasa = null;
+        if ($rasa >= 0 && $rasa < 40) {
+            $preferensiRasa = 'asam';
+        } elseif ($rasa >= 20 && $rasa < 60) {
+            $preferensiRasa = 'manis';
+        } elseif ($rasa >= 40 && $rasa < 80) {
+            $preferensiRasa = 'pedas';
+        } elseif ($rasa >= 60 && $rasa <= 100) {
+            $preferensiRasa = 'asin';
+        }
+
+        $recommendedMenus = [];
+        foreach ($menus as $menu) {
+            // Filter menu berdasarkan cita rasa
+            if (strtolower($menu->cita_rasa) !== $preferensiRasa) {
+                continue;
+            }
+            $ruleExecutions = \App\Models\RuleExecution::where('menu_id', $menu->id)->get();
+            $minSelisih = null;
+            $bestZUser = null;
+            $bestZAdmin = null;
+            foreach ($ruleExecutions as $ruleExec) {
+                $inferenceResult = \App\Models\InferenceResult::where('rule_id', $ruleExec->rule_id)->where('menu_id', $menu->id)->first();
+                if ($inferenceResult && $ruleExec->z_admin !== null && $inferenceResult->z_user !== null) {
+                    $selisih = abs($inferenceResult->z_user - $ruleExec->z_admin);
+                    if ($minSelisih === null || $selisih < $minSelisih) {
+                        $minSelisih = $selisih;
+                        $bestZUser = $inferenceResult->z_user;
+                        $bestZAdmin = $ruleExec->z_admin;
+                    }
+                }
+            }
+            if ($minSelisih !== null) {
+                $recommendedMenus[] = [
+                    'menu' => $menu,
+                    'z_user' => $bestZUser,
+                    'z_admin' => $bestZAdmin,
+                    'selisih' => $minSelisih,
+                ];
+            }
+        }
+        usort($recommendedMenus, function($a, $b) {
+            return $a['selisih'] <=> $b['selisih'];
+        });
+        $recommendedMenus = array_slice($recommendedMenus, 0, 10);
 
         // Calculate miu_manis (Sweet) - Triangular Curve
         if ($rasa > $rasaBoundaries->batas_manis_awal && $rasa <= $rasaBoundaries->batas_manis_puncak) {
@@ -234,7 +318,24 @@ class UserPageController extends Controller
             return $b['alpha'] <=> $a['alpha'];
         });
 
-        $menus = Menu::all();
+    // Filter menu dengan harga dalam rentang ±20% dari input user
+    $maxHarga = $harga * 1.2;
+    $minHarga = $harga * 0.8;
+    // Tentukan cita rasa user berdasarkan input
+    $citaRasaUser = null;
+    if ($rasaInput >= 20 && $rasaInput <= 60) {
+        $citaRasaUser = 'manis';
+    } elseif ($rasaInput >= 40 && $rasaInput <= 80) {
+        $citaRasaUser = 'pedas';
+    } elseif ($rasaInput >= 0 && $rasaInput <= 40) {
+        $citaRasaUser = 'asam';
+    } elseif ($rasaInput >= 60 && $rasaInput <= 100) {
+        $citaRasaUser = 'asin';
+    }
+    // Filter menu dengan harga dalam rentang ±20% dan cita rasa sesuai input user
+    $menus = Menu::whereBetween('harga_seporsi', [$minHarga, $maxHarga])
+        ->where('cita_rasa', $citaRasaUser)
+        ->get();
         $hargaInput = $harga;
         $ratingInput = $rating;
         $rasaInput = $rasa;
