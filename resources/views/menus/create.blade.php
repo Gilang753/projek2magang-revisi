@@ -4,7 +4,7 @@
 
 @section('content')
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1>Tambah Menu Baru</h1>
+        <h1 class="fw-bold">Tambah Menu Baru</h1>
         <a href="{{ route('menus.index') }}" class="btn btn-secondary">
             <i class="bi bi-arrow-left"></i> Kembali
         </a>
@@ -37,7 +37,13 @@
                 <div class="mb-3">
                     <label for="nilai_rasa" class="form-label">Nilai Rasa (0-100)</label>
                     <input type="number" class="form-control" id="nilai_rasa" name="nilai_rasa" min="0" max="100" required oninput="updateRasaBox()">
-                    <div class="form-text">Masukkan nilai antara 0 sampai 100</div>
+                    <div class="form-text">
+                        <strong>Keterangan Rasa:</strong><br>
+                        0 - 25 = Asam<br>
+                        26 - 50 = Manis<br>
+                        51 - 75 = Pedas<br>
+                        76 - 100 = Asin
+                    </div>
                 </div>
                 <div class="mb-3">
                     <label class="form-label">Hasil Rasa</label>
@@ -48,13 +54,13 @@
                     const nilai = parseFloat(document.getElementById('nilai_rasa').value);
                     let rasa = '';
                     if (!isNaN(nilai)) {
-                        if (nilai >= 0 && nilai <= 40) {
+                        if (nilai >= 0 && nilai <= 25) {
                             rasa = 'Asam';
-                        } else if (nilai > 20 && nilai <= 60) {
+                        } else if (nilai > 25 && nilai <= 50) {
                             rasa = 'Manis';
-                        } else if (nilai > 40 && nilai <= 80) {
+                        } else if (nilai > 50 && nilai <= 75) {
                             rasa = 'Pedas';
-                        } else if (nilai > 60 && nilai <= 100) {
+                        } else if (nilai > 75 && nilai <= 100) {
                             rasa = 'Asin';
                         } else {
                             rasa = 'Tidak diketahui';
@@ -62,6 +68,10 @@
                     }
                     document.getElementById('hasil_rasa').value = rasa;
                 }
+                // Set hasil rasa saat halaman dibuka (untuk nilai default)
+                document.addEventListener('DOMContentLoaded', function() {
+                    updateRasaBox();
+                });
                 </script>
                 
                 <div class="mb-3">
@@ -94,6 +104,10 @@
                     }
                     document.getElementById('hasil_rating').value = rating;
                 }
+                // Set hasil rating saat halaman dibuka (untuk nilai default)
+                document.addEventListener('DOMContentLoaded', function() {
+                    updateRatingBox();
+                });
                 </script>
                 
                 <div class="mb-3">

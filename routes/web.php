@@ -11,9 +11,8 @@ use App\Http\Controllers\RasaFuzzyController;
 use App\Http\Controllers\RekomendasiFuzzyController;
 
 // Route untuk halaman utama
-Route::get('/', function () {
-    return view('/admin/login');
-});
+Route::get('/', [UserPageController::class, 'index']);
+
 
 // Route authentication
 Route::get('/admin/login', [AuthController::class, 'showLoginForm'])->name('admin.login');
@@ -23,6 +22,7 @@ Route::post('/admin/logout', [AuthController::class, 'logout'])->name('admin.log
 // Route untuk halaman user (bisa diakses tanpa login)
 Route::get('/user', [UserPageController::class, 'index'])->name('user.index');
 Route::post('/user/execute-rule', [UserPageController::class, 'executeRule'])->name('user.executeRule');
+Route::get('/user/menu/{id}', [UserPageController::class, 'showMenuDetail'])->name('user.show'); // Tambahkan route ini
 
 // Route yang memerlukan authentication admin
 Route::middleware(['admin.auth'])->group(function () {

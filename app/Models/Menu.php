@@ -86,13 +86,13 @@ class Menu extends Model
      */
     public static function mapNilaiToRasa($nilai_rasa)
     {
-        if ($nilai_rasa >= 0 && $nilai_rasa <= 40) {
+        if ($nilai_rasa > 0 && $nilai_rasa <= 25) {
             return 'asam';
-        } elseif ($nilai_rasa > 20 && $nilai_rasa <= 60) {
+        } elseif ($nilai_rasa > 25 && $nilai_rasa <= 50) {
             return 'manis';
-        } elseif ($nilai_rasa > 40 && $nilai_rasa <= 80) {
+        } elseif ($nilai_rasa > 50 && $nilai_rasa <= 75) {
             return 'pedas';
-        } elseif ($nilai_rasa > 60 && $nilai_rasa <= 100) {
+        } elseif ($nilai_rasa > 75 && $nilai_rasa <= 100) {
             return 'asin';
         }
         return 'tidak diketahui';

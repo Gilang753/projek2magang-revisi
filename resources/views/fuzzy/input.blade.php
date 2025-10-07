@@ -10,7 +10,7 @@
     @if(session('error'))
         <div class="alert alert-danger">{{ session('error') }}</div>
     @endif
-    <h2 class="text-center mb-4">Hitung Derajat Keanggotaan Fuzzy</h2>
+    <h2 class="text-center mb-4">Hitung Derajat Keanggotaan Fuzzy Harga</h2>
 
     <form action="{{ route('fuzzy.boundaries.store') }}" method="POST" class="mb-5">
         <div style="width: 100%; max-width: 900px; margin: 0 auto 32px auto; background: #fff; border-radius: 14px; box-shadow: 0 2px 12px rgba(0,0,0,0.09); padding: 24px 16px 32px 16px;">
@@ -29,7 +29,7 @@
             <div class="text-center mt-4 fw-bold" style="color:#3b3b3b; letter-spacing:0.5px;">Gabungan</div>
         </div>
         @csrf
-        <h5 class="mb-3">Tentukan Batas Fuzzy</h5>
+        <h5 class="mb-3">Tentukan Batas Fuzzy Harga</h5>
         
         {{-- Kurva Murah (Bahu Kiri) --}}
         <div class="card p-3 mb-4">
